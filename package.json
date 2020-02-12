@@ -7,7 +7,7 @@
   "license": "MIT",
   "access": "public",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org"
+    "@scope:registry": "https://registry.npmjs.org"
   },
   "scripts": {
     "copy": "mkdir -p dist && mkdir -p lib && mkdir -p dist && cp src/devsample/*.json dist && cp {.npmignore,package.json} lib && echo disabled: ln -sfn ../node_modules lib/node_modules",
