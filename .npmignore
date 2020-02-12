@@ -1,0 +1,3 @@
+# this file will be copied to lib before publishing so files relative to that
+devsample
+test

@@ -1,0 +1,41 @@
+/*
+Copyright 2019 Adobe
+All Rights Reserved.
+
+NOTICE: Adobe permits you to use, modify, and distribute this file in
+accordance with the terms of the Adobe license agreement accompanying
+it. If you have received this file from a source other than Adobe,
+then your use, modification, or distribution of it requires the prior
+written permission of Adobe. 
+*/
+.SampleContainer {
+    user-select: none;
+    background: lightgray;
+}
+.SampleRow {
+    display: block;
+    background: grey;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
+    margin-bottom: 8px;
+}
+.SampleRow.selected {
+    height: 50px;
+}
+.SampleCell {
+    /* use presence of display: inline to indicate grid layout */
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    margin: 0px 16px 16px;
+}
+
+@media (max-width: 600px) {
+    .SampleCell {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        margin: 0px 8px 8px;
+    }
+}

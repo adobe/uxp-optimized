@@ -1,0 +1,53 @@
+<!--
+Copyright 2019 Adobe
+All Rights Reserved.
+
+NOTICE: Adobe permits you to use, modify, and distribute this file in
+accordance with the terms of the Adobe license agreement accompanying
+it. If you have received this file from a source other than Adobe,
+then your use, modification, or distribution of it requires the prior
+written permission of Adobe.    
+-->
+<html>
+    <head>
+        <style>
+            .container {
+                display: flex;
+                margin: 10px;
+                width: calc(100% - 40px);
+                flex: 1 1 auto;
+                height: 600px;
+                font-size: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <button onclick="setAutoscroll(document.getElementById('virtualizer'));">AutoScroll</button>
+        <div class="container" id="newReactContainer"></div>
+        <script src="SampleSelector.tsx"></script>
+
+        <script>
+        let scrollVelocity = 800;
+        function autoscroll() {
+            if (autoscrollContainer) {
+                const newTop = autoscrollContainer.scrollTop + scrollVelocity;
+                if (newTop <= 0 || newTop > autoscrollContainer.scrollHeight - autoscrollContainer.clientHeight) {
+                    scrollVelocity = -scrollVelocity;
+                }
+                autoscrollContainer.scrollTo({ top: newTop, behavior: "smooth" });
+                setTimeout(() => {
+                    autoscroll();
+                }, 300)
+            }
+
+            // update fps
+            // document.getElementById("fps").innerText = (Math.round(window.sessionStorage.fps) || "");
+        }
+        let autoscrollContainer;
+        function setAutoscroll(container) {
+            autoscrollContainer = autoscrollContainer === container ? null : container;
+            autoscroll();
+        }
+        </script>
+    </body>
+</html>

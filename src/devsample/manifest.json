@@ -1,0 +1,12 @@
+{
+    "name": "Webpack Plugin",
+    "id": "webpack.plugin",
+    "version": "0.0.1",
+    "main": "index.html",
+    "uiEntrypoints": [
+        {
+            "type": "homescreen",
+            "panelId": "mainPanel"
+        }
+    ]
+}

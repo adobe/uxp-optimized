@@ -1,0 +1,29 @@
+/*
+Copyright 2019 Adobe
+All Rights Reserved.
+
+NOTICE: Adobe permits you to use, modify, and distribute this file in
+accordance with the terms of the Adobe license agreement accompanying
+it. If you have received this file from a source other than Adobe,
+then your use, modification, or distribution of it requires the prior
+written permission of Adobe. 
+*/
+.ManualSampleContainer {
+    user-select: none;
+    background: orange;
+    z-index: 0;
+}
+.ManualSampleRow {
+    display: block;
+    /*
+    Rows should always appear beneath cells.
+    This is similar to cc-libraries technique with view by group.
+    The groups are positioned underneath the cells.
+    */
+    z-index: -1;
+    background: lightblue;
+}
+.ManualSampleCell {
+    /* use presence of display: inline to indicate grid layout */
+    border-radius: 4px;
+}

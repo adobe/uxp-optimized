@@ -1,0 +1,6 @@
+.DS_Store
+dist
+lib
+node_modules
+.cache
+yarn-error.log
