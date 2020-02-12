@@ -1,7 +1,7 @@
 {
   "name": "@adobe/uxp-optimized",
   "description": "Library of react components optimized for Adobe's Unified Extensibility Platform",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "main": "index.js",
   "author": "Kris Nye <knye@adobe.com>",
   "license": "MIT",
