@@ -1,13 +1,13 @@
 {
   "name": "@adobe/uxp-optimized",
   "description": "Library of react components optimized for Adobe's Unified Extensibility Platform",
-  "version": "1.0.13",
+  "version": "1.0.8",
   "main": "index.js",
   "author": "Kris Nye <knye@adobe.com>",
   "license": "MIT",
   "access": "public",
   "publishConfig": {
-    "@scope:registry": "https://registry.npmjs.org"
+    "@adobe:registry": "https://registry.npmjs.org"
   },
   "scripts": {
     "copy": "mkdir -p dist && mkdir -p lib && mkdir -p dist && cp src/devsample/*.json dist && cp {.npmignore,package.json} lib && echo disabled: ln -sfn ../node_modules lib/node_modules",
@@ -16,7 +16,7 @@
     "watch": "yarn run copy && tsc -w",
     "test": "mocha lib/test",
     "watch_test": "nodemon -w lib -x yarn test",
-    "deploy": "rm -rf lib && tsc && yarn run test && npm version patch && yarn run copy && cd lib && npm publish --\"@scope:registry=https://registry.npmjs.org\""
+    "deploy": "rm -rf lib && tsc && yarn run test && npm version patch && yarn run copy && cd lib && npm publish"
   },
   "peerDependencies": {
     "react": "^16.8.6",
