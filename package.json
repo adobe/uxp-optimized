@@ -1,10 +1,11 @@
 {
   "name": "@adobe/uxp-optimized",
+  "description": "Library of react components optimized for Adobe's Unified Extensibility Platform",
   "version": "1.0.8",
   "main": "index.js",
   "author": "Kris Nye <knye@adobe.com>",
   "license": "MIT",
-  "access": "private",
+  "access": "public",
   "scripts": {
     "copy": "mkdir -p dist && mkdir -p lib && mkdir -p dist && cp src/devsample/*.json dist && cp {.npmignore,package.json} lib && echo disabled: ln -sfn ../node_modules lib/node_modules",
     "build": "yarn run copy && parcel build src/devsample/index.html && tsc",
@@ -13,9 +14,6 @@
     "test": "mocha lib/test",
     "watch_test": "nodemon -w lib -x yarn test",
     "deploy": "rm -rf lib && tsc && yarn run test && npm version patch && yarn run copy && cd lib && npm publish"
-  },
-  "publishConfig": {
-    "registry": "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npm-torq-release/"
   },
   "peerDependencies": {
     "react": "^16.8.6",
@@ -29,6 +27,6 @@
     "jsdom": "^16.0.0",
     "mocha": "^7.0.0",
     "parcel-bundler": "^1.12.4",
-    "typescript": "^3.7.4"
+    "typescript": "^3.7.5"
   }
 }

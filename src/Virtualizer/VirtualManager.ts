@@ -15,7 +15,7 @@ import Margin from "../common/Margin";
 import Rectangle from "../common/Rectangle";
 import getStableArray from "./getStableArray";
 import React, { ReactElement } from "react";
-import { IS_UXP } from "..";
+import { isUXP } from "..";
 
 const initialVisibleItemCount = 30;
 
@@ -378,7 +378,7 @@ export default class VirtualManager<T> {
         let scrollTop = this.container.scrollTop;
         let scrollDelta = scrollTop - this.lastScrollTop;
         const minPrerenderSize = Math.min(this.prerenderOtherDirection, this.prerenderScrollDirection); 
-        let minScroll = IS_UXP ? Math.min(minPrerenderSize / 2, 100) : 1;
+        let minScroll = isUXP ? Math.min(minPrerenderSize / 2, 100) : 1;
         if (!force && scrollTop > 0 && Math.abs(scrollDelta) < minScroll) {
             //  minScroll => FPS (in grid + header sample)
             //  0   => 32, 20  => 36, 50  => 36, 60  => 35

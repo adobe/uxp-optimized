@@ -9,4 +9,4 @@ then your use, modification, or distribution of it requires the prior
 written permission of Adobe. 
 */
 
-export const IS_UXP = typeof document !== "undefined" && (document as any).location.protocol === "plugin:"
+export const isUXP = typeof document !== "undefined" && (document as any).location.protocol === "plugin:"
