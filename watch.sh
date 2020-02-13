@@ -20,7 +20,7 @@ nvm use 10
 trap "kill 0" SIGINT SIGTERM EXIT
 
 (cd ../torq-native && node build inspector) &
-(yarn watchSample) &
+(yarn watch_sample) &
 (sleep 15 && ../torq-native/build/out/bin/macos/v8/nativeui/Debug/demo.app/Contents/MacOS/demo --extension dist) &
 
 wait

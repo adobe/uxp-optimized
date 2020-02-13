@@ -23,7 +23,7 @@
   "scripts": {
     "copy": "mkdir -p dist && mkdir -p lib && mkdir -p dist && cp src/devsample/*.json dist && cp {.npmignore,README.md,package.json} lib && echo disabled: ln -sfn ../node_modules lib/node_modules",
     "build": "yarn run copy && parcel build src/devsample/index.html && tsc",
-    "watchSample": "yarn run copy && parcel src/devsample/index.html",
+    "watch_sample": "yarn run copy && parcel src/devsample/index.html",
     "watch": "yarn run copy && tsc -w",
     "test": "mocha lib/test",
     "watch_test": "nodemon -w lib -x yarn test",

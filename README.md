@@ -59,7 +59,7 @@ A react virtualizer for efficiently rendering long lists of items. Similar to re
 
 #### Testing in browser
 
-    yarn run watch
+    yarn watch_sample
 
 Open [http://localhost:1234](http://localhost:1234) in your browser.
 
