@@ -30,8 +30,7 @@
     "deploy": "rm -rf lib && tsc && yarn run test && npm version patch && yarn run copy && cd lib && npm publish --access public"
   },
   "peerDependencies": {
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6"
+    "react": "^16.8.6"
   },
   "devDependencies": {
     "@types/jsdom": "^12.2.4",
@@ -41,6 +40,7 @@
     "jsdom": "^16.0.0",
     "mocha": "^7.0.0",
     "parcel-bundler": "^1.12.4",
+    "react-dom": "^16.8.6",
     "typescript": "^3.7.5"
   }
 }
