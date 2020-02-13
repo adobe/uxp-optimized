@@ -16,7 +16,7 @@
     "watch": "yarn run copy && tsc -w",
     "test": "mocha lib/test",
     "watch_test": "nodemon -w lib -x yarn test",
-    "deploy": "rm -rf lib && tsc && yarn run test && npm version patch && yarn run copy && cd lib && npm publish"
+    "deploy": "rm -rf lib && tsc && yarn run test && npm version patch && yarn run copy && cd lib && npm publish --access public"
   },
   "peerDependencies": {
     "react": "^16.8.6",
