@@ -8,11 +8,11 @@ it. If you have received this file from a source other than Adobe,
 then your use, modification, or distribution of it requires the prior
 written permission of Adobe. 
 */
-import React, { useState, useRef, forwardRef, useImperativeHandle, ReactElement, CSSProperties, RefForwardingComponent, Ref, MutableRefObject } from 'react';
+import React, { useState, useRef, forwardRef, useImperativeHandle, RefForwardingComponent, Ref, MutableRefObject } from 'react';
 import VirtualManager, { ItemProperty } from './VirtualManager';
-import Rect from '../common/Rect';
 import memoize from '../common/memoize';
 import '../common/shims';
+import { VirtualizerInputHandles, VirtualizerProperties } from './VirtualizerApi';
 
 // console.log('-----------------------------------------')
 // console.log('-----------------------------------------')
@@ -47,24 +47,7 @@ function createPropertyGetter<T,V>(
     throw new Error(`Unsupported property: ${property}`);
 }
 
-export type ContainerInputHandles = {
-    scrollToItem(key: string): void
-}
-
-export type ContainerProperties<T = any> = {
-    id?: string
-    className?: string
-    style?: CSSProperties
-    items: T[]
-    itemKey?: ItemProperty<T,string> | keyof T
-    itemType?: ItemProperty<T,string> | keyof T
-    itemRect?: ItemProperty<T,Rect> | keyof T
-    scrollToItem?: string
-    children(item: T): ReactElement
-    ref?: any
-}
-
-export default forwardRef(function Container<T>(properties: ContainerProperties<T>, ref: Ref<ContainerInputHandles>) {
+export default forwardRef(function Virtualizer<T>(properties: VirtualizerProperties<T>, ref: Ref<VirtualizerInputHandles>) {
     let { items, itemKey, itemType, itemRect, scrollToItem, style, children: factory, ...otherProps } = properties;
     const itemKeyFunction = memoize(createPropertyGetter(itemKey, () => {
         //  if user provides no key property/function
@@ -147,4 +130,4 @@ export default forwardRef(function Container<T>(properties: ContainerProperties<
             }
         </div>
     );
-}) as RefForwardingComponent<ContainerInputHandles, ContainerProperties>;
+}) as RefForwardingComponent<VirtualizerInputHandles, VirtualizerProperties>;

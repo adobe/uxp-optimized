@@ -13,7 +13,7 @@ import ReactDOM from "react-dom";
 import CssLayout from "./ProgressiveCss/CssLayout";
 import ManualLayout from "./ManualLayout/ManualLayout";
 import FlowLayout from "./FlowLayout";
-import { ContainerInputHandles, ContainerProperties } from "../Virtualizer"
+import { VirtualizerInputHandles, VirtualizerProperties } from "../Virtualizer"
 
 const samples = {
     flow: { name: "Flow Layout", container: FlowLayout },
@@ -25,7 +25,7 @@ function SampleSelector(props) {
 
     const [option, setOption] = useState(Object.keys(samples)[0]);
     const SampleLayout = samples[option].container;
-    const sampleRef = useRef<ContainerInputHandles>();
+    const sampleRef = useRef<VirtualizerInputHandles>();
 
     return <div style={{display:"flex", flexDirection:"column", flex: "1"}}>
         <p style={{flex: "0 0 auto"}}>

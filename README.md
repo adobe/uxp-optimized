@@ -19,6 +19,8 @@ A react virtualizer for efficiently rendering long lists of items. Similar to re
 
 #### Usage
 
+[Virtualizer API](./src/Virtualizer/VirtualizerApi.ts)
+
     import Virtualizer from "@adobe/uxp-optimized/Virtualizer";
 
     //  1. Create your items.
@@ -40,6 +42,7 @@ A react virtualizer for efficiently rendering long lists of items. Similar to re
         item => item.type === "comment" ? <div class="comment">{item.text}</div> : <img src={item.image}></img>;
     }
     </Virtualizer>
+
 
 #### Samples
 

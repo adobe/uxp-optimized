@@ -8,6 +8,6 @@ it. If you have received this file from a source other than Adobe,
 then your use, modification, or distribution of it requires the prior
 written permission of Adobe. 
 */
-export * from "./Container";
-export { default } from "./Container";
-
+export * from "./Virtualizer";
+export * from "./VirtualizerApi";
+export { default } from "./Virtualizer";

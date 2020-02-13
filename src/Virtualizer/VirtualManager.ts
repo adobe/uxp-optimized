@@ -12,7 +12,6 @@ import "../common/ResizeObserver";
 import ResizeObserver, { ResizeObserverEntry, UxpResizeObserver } from '../common/ResizeObserver';
 import Rect from "../common/Rect";
 import Margin from "../common/Margin";
-import Rectangle from "../common/Rectangle";
 import getStableArray from "./getStableArray";
 import React, { ReactElement } from "react";
 import { isUXP } from "..";

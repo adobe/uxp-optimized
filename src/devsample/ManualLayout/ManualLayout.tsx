@@ -9,9 +9,8 @@ then your use, modification, or distribution of it requires the prior
 written permission of Adobe. 
 */
 import { getRecord, Record } from "../lines";
-import React, { useState, forwardRef, Ref, MutableRefObject } from "react";
-import ReactDOM from "react-dom";
-import Container, { ContainerInputHandles } from "../../Virtualizer";
+import React, { useState, forwardRef } from "react";
+import Virtualizer from "../../Virtualizer";
 import "./ManualLayout.css";
 
 function Row(properties: { children: string, [other: string]: any }) {
@@ -66,7 +65,7 @@ for (let item of items) {
 }
 
 export default forwardRef(function ManualLayout(props, ref) {
-    return <Container
+    return <Virtualizer
             id="virtualizer"
             items={items}
             itemKey="key"
@@ -80,5 +79,5 @@ export default forwardRef(function ManualLayout(props, ref) {
                 ? <Row>{item.row}</Row>
                 : <img className="ManualSampleCell" src={item.images[0]} title={item.text}></img>
         }
-    </Container>;
+    </Virtualizer>;
 })
