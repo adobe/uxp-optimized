@@ -1,8 +1,13 @@
 {
   "name": "@adobe/uxp-optimized",
   "description": "Library of react components optimized for Adobe's Unified Extensibility Platform",
-  "keywords": ["react", "virtualizer", "virtualized", "uxp"],
-  "version": "1.0.19",
+  "keywords": [
+    "react",
+    "virtualizer",
+    "virtualized",
+    "uxp"
+  ],
+  "version": "1.0.20",
   "main": "index.js",
   "author": "Kris Nye <knye@adobe.com>",
   "license": "MIT",
