@@ -12,6 +12,11 @@
   "author": "Kris Nye <knye@adobe.com>",
   "license": "MIT",
   "access": "public",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adobe/uxp-optimized.git"
+  },
+  "homepage": "https://github.com/adobe/uxp-optimized",
   "publishConfig": {
     "@adobe:registry": "https://registry.npmjs.org"
   },
