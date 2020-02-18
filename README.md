@@ -25,7 +25,8 @@ A react virtualizer for efficiently rendering long lists of items. Similar to re
 
     //  1. Create your items.
     let items = [
-        { key: "a", type: "comment", text: "Comment 1"},        { key: "b", type: "comment", text: "Comment 2"},
+        { key: "a", type: "comment", text: "Comment 1"},
+        { key: "b", type: "comment", text: "Comment 2"},
         { key: "c", type: "image", image: "./path/to/image.png"},
         ...
     ;]
