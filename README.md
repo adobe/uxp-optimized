@@ -29,7 +29,7 @@ A react virtualizer for efficiently rendering long lists of items. Similar to re
         { key: "b", type: "comment", text: "Comment 2"},
         { key: "c", type: "image", image: "./path/to/image.png"},
         ...
-    ;]
+    ];
 
     //  2. Create the Virtualizer
     return <Virtualizer
