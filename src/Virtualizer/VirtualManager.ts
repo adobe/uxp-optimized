@@ -105,7 +105,7 @@ export default class VirtualManager<T> {
         this.renderKeys = props.renderKeys;
         this.setRenderKeys = props.setRenderKeys;
 
-        if (!this.isscrolling) {
+        if (!this.isScrolling) {
             // we skip these time consuming steps if we are scrolling.
             // since they will be done at the end of the call chain anyways.
             let checkForDuplicates = new Set<string>();
@@ -131,28 +131,18 @@ export default class VirtualManager<T> {
         for (let item of items) {
             itemsByKey[itemKey(item)] = item;
         }
-        // const itemsByKey = new Map(items.map(item => [itemKey(item), item]));
         return renderKeys.map((key, elementIndex) => {
-            let element: ReactElement | undefined = cache[key];
-            let elementKey = String(elementIndex);
-            if (element == null) {
-                let item = itemsByKey[key];
-                if (item == null) {
-                    console.warn("item missing: ", { key, elementIndex, items })
-                    return null;
-                }
-                let created = factory(item);
-                element = cache[key] = React.cloneElement(created, {
-                    key: elementKey,
-                    "data-key": key,
-                    "data-type": itemType(item),
-                });
+            const elementKey = String(elementIndex);
+            const item = itemsByKey[key];
+            if (item == null) {
+                console.warn("item missing: ", { key, elementIndex, items })
+                return null;
             }
-            // react expects a key for each child item, so we provide them with the elements index as it's key
-            if (element.key !== elementKey) {
-                element = cache[key] = React.cloneElement(element, { key: elementKey });
-            }
-            return element;
+            return React.cloneElement(factory(item), {
+                key: elementKey,
+                "data-key": key,
+                "data-type": itemType(item),
+            });
         })
     }
 
@@ -179,17 +169,13 @@ export default class VirtualManager<T> {
         return null;
     }
 
-    isscrolling = false
+    isScrolling = false
     updateAndLayout(forceLayout = false) {
-        // this.queueUpdate(true, false);
-        // TODO: Consider removing this and doing the calculation immediately.
-        // this.updateIndexes();
-
-        this.isscrolling = true;
+        this.isScrolling = true;
         if (this.updateIndexes() || forceLayout) {
             this.layoutChildren();
         }
-        this.isscrolling = false;
+        this.isScrolling = false;
     }
 
     private layoutChildren() {
@@ -225,7 +211,7 @@ export default class VirtualManager<T> {
             let properties = this.getItemProperties(key, type);            
             let classProps = this.classProperties.get(type);
             if (!classProps) {
-                // console.warn("missing class properties: " + type);
+                console.warn("missing class properties: " + type);
                 break;
             }
             let margin = classProps.cssMargin;
@@ -261,19 +247,30 @@ export default class VirtualManager<T> {
                 }
             }
         }
+
         // increase the placeholders height to match our layed out height.
         this.placeholder.style.height = px(height);
     }
 
     private getElementLookupByKey() {
         let elementLookup = new Map<string, HTMLElement>();
+        let index = 0;
         for (let child: Node | null = this.container.firstChild; child != null; child = child.nextSibling) {
             if (isHTMLElement(child)) {
                 let key = child.dataset.key;
                 if (key) {
                     elementLookup.set(key, child);
                 }
+                else if (child.previousSibling != null) {
+                    // the first child is the height placeholder element
+                    // every other element should have a data-key property
+                    // if not that means they used a function or class component
+                    //  that is not passing ...otherProps to it's rendered element.
+                    let item = this.items[index];
+                    throw new Error(`Virtualizer item error: Function and Class components must pass through ...otherProps to rendered element. ie: <div {...otherProps}></div>. Check element created for ${JSON.stringify(item)}`);
+                }
             }
+            index++;
         }
         return elementLookup;
     }
@@ -366,6 +363,18 @@ export default class VirtualManager<T> {
         return firstAndLast;
     }
 
+    private getFocusedItemKey() {
+        for (let element = document.activeElement; element != null; element = element.parentElement) {
+            if (isHTMLElement(element)) {
+                const key = element.dataset.key;
+                if (key) {
+                    return key;
+                }
+            }
+        }
+        return null;
+    }
+
     private lastScrollTop: number = 0;
     private scrollDirection = 0; // 1 = down, -1 = up, 0 = none
     private previousItems?: T[]
@@ -374,10 +383,10 @@ export default class VirtualManager<T> {
             return;
         }
 
-        let scrollTop = this.container.scrollTop;
-        let scrollDelta = scrollTop - this.lastScrollTop;
+        const scrollTop = this.container.scrollTop;
+        const scrollDelta = scrollTop - this.lastScrollTop;
         const minPrerenderSize = Math.min(this.prerenderOtherDirection, this.prerenderScrollDirection); 
-        let minScroll = isUXP ? Math.min(minPrerenderSize / 2, 100) : 1;
+        const minScroll = isUXP ? Math.min(minPrerenderSize / 2, 100) : 1;
         if (!force && scrollTop > 0 && Math.abs(scrollDelta) < minScroll) {
             //  minScroll => FPS (in grid + header sample)
             //  0   => 32, 20  => 36, 50  => 36, 60  => 35
@@ -390,7 +399,7 @@ export default class VirtualManager<T> {
             this.lastScrollTop = scrollTop;
         }
         
-        let previousItems = this.previousItems || this.items;
+        const previousItems = this.previousItems || this.items;
         this.previousItems = this.items;
         const itemsProbablyChanged = this.items.length !== previousItems.length;
         if (itemsProbablyChanged) {
@@ -402,10 +411,16 @@ export default class VirtualManager<T> {
 
         const [firstRender, lastRender] = this.getFirstAndLastRenderItemIndex(this.scrollDirection);
 
-        let renderKeys = new Set<string>();
+        const renderKeys = new Set<string>();
         for (let i = firstRender; i <= lastRender; i++) {
             renderKeys.add(this.itemKey(this.items[i]));
         }
+        // we also want to always keep rendering a focused item so check
+        const focusedKey = this.getFocusedItemKey();
+        if (focusedKey) {
+            renderKeys.add(focusedKey);
+        }
+
         const existingKeys = new Set<string>();
         for (let item of this.items) {
             existingKeys.add(this.itemKey(item));
@@ -421,7 +436,7 @@ export default class VirtualManager<T> {
             return null;
         };
         //  We use keys since even with additions/removals, keys are stable
-        let oldKeys = this.renderKeys;  //.map(i => this.itemKey(oldItems[i]))
+        let oldKeys = this.renderKeys;
         let newKeys = getStableArray(
             oldKeys,
             renderKeys,
@@ -474,6 +489,7 @@ export default class VirtualManager<T> {
                 properties = this.getItemProperties(key, type);
             }
             // we REALLY only want to test these when absolutely necessary
+            // since reading them forces immediate layout.
             const width = element.offsetWidth;
             const height = element.offsetHeight;
             if (width > 0 && height > 0 && (width !== properties.width || height !== properties.height)) {

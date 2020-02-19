@@ -1,0 +1,8 @@
+.Comment {
+    display: block;
+    margin: 8px;
+    background: #ffb7b9;
+    border-radius: 4px;
+    padding: 4px;
+    box-sizing: border-box;
+}

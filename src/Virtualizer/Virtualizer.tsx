@@ -14,12 +14,6 @@ import memoize from '../common/memoize';
 import '../common/shims';
 import { VirtualizerInputHandles, VirtualizerProperties } from './VirtualizerApi';
 
-// console.log('-----------------------------------------')
-// console.log('-----------------------------------------')
-// console.log('react: ' + require.resolve('react'))
-// console.log('-----------------------------------------')
-// console.log('-----------------------------------------')
-
 function createPropertyGetter<T,V>(property: keyof T | ItemProperty<T,V> | undefined):  ItemProperty<T,V> | undefined
 function createPropertyGetter<T,V>(property: keyof T | ItemProperty<T,V> | undefined, defaultValue: () => ItemProperty<T,V>, validator?: (value: V, item: T) => void):  ItemProperty<T,V>
 function createPropertyGetter<T,V>(
@@ -84,19 +78,16 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
         }
     }
     useImperativeHandle(ref, () => ({ scrollToItem: scrollToItemFunction }));
-    // let containerSet = false;
     function setContainer(container) {
         if (container) {
             if (ref) {
                 (ref as any).current = container;
             }
-            // containerSet = true;
             cache.current!.container = container;
             //  we also update the renderKeys immediately
             //  this matters for future renders where
             //  we are calling setContainer with the cached container
             //  we want the correct renderKeys BEFORE we hit this functions element declaration.
-            // console.log("22222 setContainer " + (Date.now() % 10000));
             renderKeys = VirtualManager.update({
                 container, items, renderKeys, setRenderKeys,
                 itemKey: itemKeyFunction,
@@ -109,8 +100,7 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
             }
         }
     }
-    // console.log("11111 Container Render " + (Date.now() % 10000));
-    //  There is a delay between future renders and calling setContainer
+    //  There is a delay between future renders and calling setContainer.
     //  if we know the Container already, we call setContainer now
     if (cache.current.container) {
         setContainer(cache.current.container);

@@ -12,22 +12,22 @@ let items = new Array(10000).fill(null).map((value, index) => {
     let section = Math.floor(index / itemsPerSection);
     if (index % itemsPerSection === 0) {
         return {
-            key: `${index}`,
-            type: "header",
+            key: `${-1 - section}`,
+            type: "Header",
             text: `Section ${section}` };
     }
     else {
         if (Math.floor(index / 12) % 2 === 0) {
             return {
                 key: `${index}`,
-                type: "image",
+                type: "Icon",
                 image: `https://picsum.photos/id/${index % 50}/200/200`
             };
         }
         else {
             return {
                 key: `${index}`,
-                type: "comment",
+                type: "Comment",
                 text: lines[index % lines.length]
             };
         }

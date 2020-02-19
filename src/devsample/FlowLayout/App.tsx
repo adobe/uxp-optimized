@@ -1,31 +1,42 @@
 import "./App.css";
-import React from "react";
+import React, { useState, forwardRef } from "react";
 import Virtualizer from "../../Virtualizer";
-import items from "./items";
+import defaultItems from "./items";
+import * as components from "./components";
 
-export default class App extends React.Component {
+export default forwardRef(function App(props, ref) {
 
-    render() {
-        return <div className="App">
-            <p>
-            Virtualizer Sample.
-            </p>
-            <Virtualizer id="virtualizer" items={items} itemKey="key" itemType="type" style={{ width: 500, height: 500, background: 'orange' }}>
-                {
-                    item => {
-                        switch (item.type) {
-                            case "header":
-                                return <div className="SampleHeader">{ item.text }</div>
-                            case "image":
-                                return <img className="SampleImage" src={ item.image }></img>
-                            case "comment":
-                            default:
-                                return <div className="SampleComment">{ item.text }</div>
-                        }
-                    }
-                }
-            </Virtualizer>
-        </div>
+    const [items, setItems] = useState(defaultItems);
+    // we will pass this to children so they can modify their item state.
+    const updateItem = (item, props) => {
+        let index = items.indexOf(item);
+        let newItem = { ...item, ...props };
+        let newItems = items.slice(0);
+        newItems[index] = newItem;
+        setItems(newItems);
+        console.log("updateItem", item, props);
     }
 
-}
+    return <div className="App">
+        <p>
+        Virtualizer Sample.
+        </p>
+        <Virtualizer
+            id="virtualizer"
+            items={items}
+            itemKey="key"
+            itemType="type"
+            className="Virtualizer"
+            style={{ width: 500, height: 500 }}
+            ref={ref}
+        >
+            {
+                item => {
+                    let Component = components[item.type];
+                    return <Component item={item} updateItem={updateItem} />;
+                }
+            }
+        </Virtualizer>
+    </div>
+
+})
