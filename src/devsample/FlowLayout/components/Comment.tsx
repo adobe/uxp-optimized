@@ -14,10 +14,12 @@ export default function Comment(props) {
             {...otherProps}
         >
             {
-                !editing ? item.text : <input
-                    type="text"
+                !editing ? item.text : <textarea
                     autoFocus
                     defaultValue={item.text}
+                    onBlur={e => {
+                        setEditing(false);
+                    }}
                     onKeyDown={e => {
                         if (e.key === "Escape") {
                             setEditing(false);

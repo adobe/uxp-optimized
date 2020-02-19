@@ -1,8 +1,15 @@
 .Comment {
-    display: block;
+    display: flex;
+    flex-direction: row;
     margin: 8px;
     background: #ffb7b9;
     border-radius: 4px;
     padding: 4px;
     box-sizing: border-box;
+}
+
+.Comment > textarea {
+    flex: 1;
+    min-height: 100px;
+    font-size: 20px;
 }
