@@ -8,6 +8,7 @@ it. If you have received this file from a source other than Adobe,
 then your use, modification, or distribution of it requires the prior
 written permission of Adobe. 
 */
+import { isUXP } from ".."
 
 export type ResizeObserverEntry = {
     target: Element
@@ -85,7 +86,12 @@ declare global {
 
 if (typeof window !== "undefined") {
     if (window.ResizeObserver == null) {
-        window.ResizeObserver = ResizeObserver;
+        if (isUXP) {
+            window.ResizeObserver = ResizeObserver;
+        }
+        else {
+            console.error("This browser requires a ResizeObserver shim");
+        }
     }
     else {
         ResizeObserver = window.ResizeObserver as any;
