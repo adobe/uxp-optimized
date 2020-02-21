@@ -17,6 +17,7 @@ import React, { ReactElement } from "react";
 import { isUXP } from "..";
 
 const initialVisibleItemCount = 30;
+const hidePositionTop = "-10000px";
 
 export type ItemProperty<T,V> = (item: T) => V
 
@@ -457,7 +458,10 @@ export default class VirtualManager<T> {
                 //  we HAVE to use display: none
                 //  if we use visibility: hidden then the hidden elements
                 //  still count for scroll size
-                element.style.display = deleted ? "none" : "";
+                element.style.visibility = deleted ? "hidden" : "";
+                if (deleted) {
+                    element.style.top = hidePositionTop;
+                }
             }
         });
 
