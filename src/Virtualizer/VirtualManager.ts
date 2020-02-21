@@ -341,7 +341,7 @@ export default class VirtualManager<T> {
     }
 
     get prerenderScrollDirection() {
-        return 200;
+        return 500;
     }
 
     private getFirstAndLastRenderItemIndex(scrollDirection: number) {
