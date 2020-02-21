@@ -135,10 +135,16 @@ export default class VirtualManager<T> {
             const elementKey = String(elementIndex);
             const item = itemsByKey[key];
             if (item == null) {
+                // if the item is not found it may have been temporarily hidden
+                // we will try to render it from cached element.
+                const cached = cache[key];
+                if (cached) {
+                    return cached;
+                }
                 console.warn("item missing: ", { key, elementIndex, items })
                 return null;
             }
-            return React.cloneElement(factory(item), {
+            return cache[key] = React.cloneElement(factory(item), {
                 key: elementKey,
                 "data-key": key,
                 "data-type": itemType(item),
