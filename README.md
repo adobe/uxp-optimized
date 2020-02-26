@@ -70,10 +70,18 @@ Note: The browser must currently support ResizeObserver api.
 
 Install torq-native in a peer directory and then run:
 
-
     ./watch.sh
 
 This should launch the sample in the UXP demo as a plugin.
+
+### Performance Tips for UXP
+
+- Minimize number of elements rendered per virtual item.
+- All virtual items with the same html structure should share the same "itemType".
+    - Items are only recycled within the same "itemType".
+- Prefer to use display: none; instead of visibility: hidden; for invisible elements.
+    - display: none means native elements don't have to be created.
+    - We don't want to pay a cost for elements that only *might* become visible.
 
 ### Contributing
 

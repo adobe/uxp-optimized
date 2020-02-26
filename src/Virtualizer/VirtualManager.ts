@@ -371,7 +371,7 @@ export default class VirtualManager<T> {
     }
 
     private getFocusedItemKey() {
-        for (let element = document.activeElement; element != null; element = element.parentElement) {
+        for (let element: Node | null = document.activeElement; element != null; element = element.parentNode) {
             if (isHTMLElement(element)) {
                 const key = element.dataset.key;
                 if (key) {
