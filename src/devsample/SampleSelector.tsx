@@ -14,8 +14,10 @@ import CssLayout from "./ProgressiveCss/CssLayout";
 import ManualLayout from "./ManualLayout/ManualLayout";
 import FlowLayout from "./FlowLayout";
 import { VirtualizerInputHandles, VirtualizerProperties } from "../Virtualizer"
+import ReactSpectrum from "./ReactSpectrum/ReactSpectrum";
 
 const samples = {
+    react: { name: "React Spectrum 3", container: ReactSpectrum },
     flow: { name: "Flow Layout", container: FlowLayout },
     css: { name: "Progressive Css Layout", container: CssLayout },
     manual: { name: "Manual Layout", container: ManualLayout },
@@ -28,7 +30,7 @@ function SampleSelector(props) {
     const sampleRef = useRef<VirtualizerInputHandles>();
 
     return <div style={{display:"flex", flexDirection:"column", flex: "1"}}>
-        <p style={{flex: "0 0 auto"}}>
+        <div style={{flex: "0 0 auto"}}>
             <select
                 id="sampleSelect"
                 defaultValue={option}
@@ -51,7 +53,7 @@ function SampleSelector(props) {
                     }}>ScrollToCell Header {headerIndex}</button>
                 })
             }
-        </p>
+        </div>
         <SampleLayout ref={sampleRef} />
     </div>
 
