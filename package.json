@@ -38,6 +38,7 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "^13.1.6",
     "@types/react": "^16.8.25",
+    "html-webpack-plugin": "^3.2.0",
     "jsdom": "^16.0.0",
     "mocha": "^7.0.0",
     "parcel-bundler": "^1.12.4",
@@ -51,5 +52,9 @@
     "@react-spectrum/checkbox": "^3.0.0-rc.1",
     "@react-spectrum/provider": "^3.0.0-rc.1",
     "@react-spectrum/theme-default": "^3.0.0-rc.1"
+  },
+  "optionalDependencies": {
+    "@torq-native/webpack-builder": "^0.1.0-master.15",
+    "webpack": "^4.42.0"
   }
 }
