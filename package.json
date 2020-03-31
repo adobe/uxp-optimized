@@ -51,7 +51,9 @@
     "@react-spectrum/button": "^3.0.0-rc.1",
     "@react-spectrum/checkbox": "^3.0.0-rc.1",
     "@react-spectrum/provider": "^3.0.0-rc.1",
-    "@react-spectrum/theme-default": "^3.0.0-rc.1"
+    "@react-spectrum/theme-default": "^3.0.0-rc.1",
+    "sass-loader": "^8.0.2",
+    "source-map-loader": "^0.2.4"
   },
   "optionalDependencies": {
     "@torq-native/webpack-builder": "^0.1.0-master.15",
