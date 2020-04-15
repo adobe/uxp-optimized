@@ -7,7 +7,7 @@
     "virtualized",
     "uxp"
   ],
-  "version": "1.0.30",
+  "version": "1.0.31",
   "main": "index.js",
   "author": "Kris Nye <knye@adobe.com>",
   "license": "MIT",
