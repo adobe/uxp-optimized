@@ -363,8 +363,10 @@ export default class VirtualManager<T> {
         //     scroll: scrollDirection,
         //     t: this.container.scrollTop,
         //     b: this.container.scrollTop + pageSize,
+        //     pageSize,
         //     page: pageSize, top, bottom,
-        //     firstAndLast
+        //     firstAndLast,
+        //     placeholderHeight: this.placeholder.style.height
         // }));
         return firstAndLast;
     }
@@ -461,13 +463,15 @@ export default class VirtualManager<T> {
             }
         });
 
+        // console.log({ existingKeys, renderKeys, newKeys, firstRender, lastRender })
+
         // we do a deep compare as we don't want to cause react re-rendering unless our rendered item renderKeys have changed.
         if (JSON.stringify(oldKeys) !== JSON.stringify(newKeys)) {
             // const debug = true;
             // if (debug) {
             //     let counts: any = {};
             //     for (let key of newKeys) {
-            //         let type = newTypes.get(key) || oldTypes.get(key)!;
+            //         let type = getType(key)!;
             //         counts[type] = (counts[type] || 0) + 1;
             //     }
             //     console.log(JSON.stringify(counts, null, 2));

@@ -66,13 +66,17 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
         keyToItem.set(itemKeyFunction(item), item);
     }
     function scrollToItemFunction(key: string) {
-        if (cache.current!.container) {
-            let manager = VirtualManager.instance(cache.current!.container);
+        let container = cache.current!.container
+        if (container) {
+            let manager = VirtualManager.instance(container);
             const item = keyToItem.get(key);
             if (item && manager) {
                 const bounds = manager.getItemRect(item);
                 if (bounds) {
-                    cache.current!.container.scrollTo({ top: bounds.y, behavior: "smooth" });
+                    const clientHeight = container.clientHeight;
+                    const scrollHeight = container.scrollHeight;
+                    const targetScrollTop = Math.min(bounds.y, Math.max(0, scrollHeight - clientHeight));
+                    container.scrollTo({ top: targetScrollTop, behavior: "smooth" });
                 }
             }
         }
