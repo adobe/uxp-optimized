@@ -94,7 +94,10 @@ export default class VirtualManager<T> {
         this.onresize = this.onresize.bind(this);      
         this.resizeObserver = new ResizeObserver(this.onresize);
         this.updateAndLayout = this.updateAndLayout.bind(this);
-        this.container.addEventListener("scroll", () => { this.updateAndLayout(); });
+        this.container.addEventListener("scroll", (e) => {
+            // console.log("+++++++++++++ container scroll event", e);
+            this.updateAndLayout();
+        });
         this.placeholder = document.createElement("div");
         this.container.appendChild(this.placeholder);
         this.update(props);
@@ -393,19 +396,7 @@ export default class VirtualManager<T> {
 
         const scrollTop = this.container.scrollTop;
         const scrollDelta = scrollTop - this.lastScrollTop;
-        const minPrerenderSize = Math.min(this.prerenderOtherDirection, this.prerenderScrollDirection); 
-        const minScroll = isUXP ? Math.min(minPrerenderSize / 2, 100) : 1;
-        if (!force && scrollTop > 0 && Math.abs(scrollDelta) < minScroll) {
-            //  minScroll => FPS (in grid + header sample)
-            //  0   => 32, 20  => 36, 50  => 36, 60  => 35
-            //  100 => 33, 200 => 38, 250 => 40, 300 => 43, 400 => 43
-            //  there is latency in the async uxp communication.
-            //  it seems that sending it larger chunks improves performance moderately.
-            return;
-        }
-        else {
-            this.lastScrollTop = scrollTop;
-        }
+        this.lastScrollTop = scrollTop;
         
         const previousItems = this.previousItems || this.items;
         this.previousItems = this.items;
