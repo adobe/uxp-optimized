@@ -127,7 +127,7 @@ describe('Container', function() {
         });
 
         it("should not render items that are not visible", async () => {
-            const target = document.getElementById("app");
+            const target = document.getElementById("app")!;
 
             // Make the first item really big - we want to make sure it's rendered if partially visible, but
             // other items that are completely off-screen are not rendered.

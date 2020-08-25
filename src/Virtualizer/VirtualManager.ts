@@ -338,6 +338,13 @@ export default class VirtualManager<T> {
             }
         }
 
+        // we have to render *some* items since we may only get their accurate reported positions after they are rendered.
+        if (renderKeys.size === 0) {
+            for (let i = 0; i < initialVisibleItemCount && i < this.items.length; i++) {
+                renderKeys.add(this.itemKey(this.items[i]))
+            }
+        }
+
         // we also want to always keep rendering a focused item so add this too
         const focusedKey = this.getFocusedItemKey();
         if (focusedKey) {
