@@ -403,12 +403,10 @@ export default class VirtualManager<T> {
             getType
         );
         const elementLookup = this.getElementLookupByKey();
-        let hasDeletedKeys = false;
         newKeys.forEach(key => {
             let element = elementLookup.get(key);
             if (element) {
                 const deleted = !existingKeys.has(key);
-                hasDeletedKeys = hasDeletedKeys || deleted;
                 //  we HAVE to use display: none
                 //  if we use visibility: hidden then the hidden elements
                 //  still count for scroll size
@@ -419,9 +417,7 @@ export default class VirtualManager<T> {
         // console.log({ existingKeys, renderKeys, newKeys })
 
         // we do a deep compare as we don't want to cause react re-rendering unless our rendered item renderKeys have changed.
-        // Since both oldKeys and newKeys came from sets, we can assume there are no duplicates. This means that if the arrays
-        // are the same length, and no keys that are in newKeys are missing from oldKeys, then the arrays must be the same!
-        if (oldKeys.length !== newKeys.length || hasDeletedKeys) {
+        if (oldKeys.length !== newKeys.length || JSON.stringify(oldKeys) !== JSON.stringify(newKeys) {
             // const debug = true;
             // if (debug) {
             //     let counts: any = {};
