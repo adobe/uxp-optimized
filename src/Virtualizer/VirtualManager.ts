@@ -417,7 +417,7 @@ export default class VirtualManager<T> {
         // console.log({ existingKeys, renderKeys, newKeys })
 
         // we do a deep compare as we don't want to cause react re-rendering unless our rendered item renderKeys have changed.
-        if (oldKeys.length !== newKeys.length || JSON.stringify(oldKeys) !== JSON.stringify(newKeys) {
+        if (oldKeys.length !== newKeys.length || JSON.stringify(oldKeys) !== JSON.stringify(newKeys)) {
             // const debug = true;
             // if (debug) {
             //     let counts: any = {};
