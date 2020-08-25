@@ -6,21 +6,16 @@ NOTICE: Adobe permits you to use, modify, and distribute this file in
 accordance with the terms of the Adobe license agreement accompanying
 it. If you have received this file from a source other than Adobe,
 then your use, modification, or distribution of it requires the prior
-written permission of Adobe.
+written permission of Adobe. 
 */
 import path from "path";
 import { after, before, describe, it } from "mocha";
 import { strict as assert } from "assert";
 import { JSDOM } from "jsdom";
-import { getSampleItems, getSampleContainer } from "./SampleContainer";
+import SampleContainer from "./SampleContainer";
 
 const testHtml = path.join(__dirname, "../../src/test/test.html");
 declare const global: NodeJS.Global & any;
-
-const containerHeight = 400;
-const backwardPrerender = 100;
-const forwardPrerender = 500;
-const itemHeight = 50;
 
 describe('Container', function() {
     let dom: JSDOM;
@@ -48,6 +43,8 @@ describe('Container', function() {
             // dom.window.document.body.clientHeight = 800;
             let target = document.getElementById("app");
             // we have to stub clientHeight on the target or Virtualizer won't render
+            const containerHeight = 400;
+            const itemHeight = 50;
             Object.defineProperties(dom.window.HTMLElement.prototype, {
                 clientHeight: {
                     get() {
@@ -58,7 +55,7 @@ describe('Container', function() {
             if (target == null) {
                 throw new Error("Element doesn't exist");
             }
-            ReactDOM.render(getSampleContainer(getSampleItems()), target);
+            ReactDOM.render(SampleContainer, target);
             let container = target.firstElementChild as HTMLDivElement;
             // simulate stuff.
             let placeholderCount = 1;
@@ -124,37 +121,6 @@ describe('Container', function() {
             //  this shows that we are recycling elements.
             const lastTotal = counts.slice(-10).reduce((a, b) => a + b, 0);
             assert(lastTotal / 10 === counts[counts.length - 1]);
-        });
-
-        it("should not render items that are not visible", async () => {
-            const target = document.getElementById("app");
-
-            // Make the first item really big - we want to make sure it's rendered if partially visible, but
-            // other items that are completely off-screen are not rendered.
-            const items = getSampleItems();
-            items[0].rect.height = 10000;
-
-            ReactDOM.render(getSampleContainer(items), target);
-            const container = target.firstElementChild as HTMLDivElement;
-
-            // Scroll so the first item is still visible, but many items on the way are not visible
-            const scrollTop = 7000;
-            container.scrollTop = scrollTop;
-            container.dispatchEvent(new dom.window.CustomEvent('scroll'));
-
-            // Only visible elements should be rendered (including the prerender windows)
-            const topVisible = scrollTop - backwardPrerender;
-            const bottomVisible = scrollTop + containerHeight + forwardPrerender;
-            function checkVisible(element: HTMLElement) {
-                const top = parseInt(element.style.top);
-                const height = parseInt(element.style.height);
-                // Note: There's a window of the container height above/below the viewable region that we still render
-                assert(top <= bottomVisible && top + height >= topVisible);
-            }
-
-            const children = Array.from(container.children).slice(1) as HTMLElement[];
-            children.forEach(checkVisible);
-            assert(children.length === 22);
         });
     });
 
