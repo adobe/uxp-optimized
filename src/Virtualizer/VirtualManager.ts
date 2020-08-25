@@ -318,6 +318,7 @@ export default class VirtualManager<T> {
         }
         let bottom = top + pageSize;
         let totalPagesHeight = pageSize + prerenderScrollDirection + prerenderOtherDirection;
+        // console.log({ top, bottom, totalPagesHeight })
         // now expand top
         top = Math.max(0, top - (scrollDirection >= 0 ? prerenderOtherDirection : prerenderScrollDirection));
         // then expand bottom by whatever is remaining. (if this is larger than content area, that is fine)
@@ -335,6 +336,13 @@ export default class VirtualManager<T> {
             const rect = this.getItemRect(item);
             if (rect && ((rect.y + rect.height) > top) && (rect.y <= bottom)) {
                 renderKeys.add(key);
+            }
+        }
+
+        // we have to render *some* items since we may only get their accurate reported positions after they are rendered.
+        if (renderKeys.size === 0) {
+            for (let i = 0; i < initialVisibleItemCount && i < this.items.length; i++) {
+                renderKeys.add(this.itemKey(this.items[i]))
             }
         }
 

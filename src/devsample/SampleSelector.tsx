@@ -17,7 +17,7 @@ import { VirtualizerInputHandles, VirtualizerProperties } from "../Virtualizer"
 import ReactSpectrum from "./ReactSpectrum/ReactSpectrum";
 
 const samples = {
-    react: { name: "React Spectrum 3", container: ReactSpectrum },
+    // react: { name: "React Spectrum 3", container: ReactSpectrum },
     flow: { name: "Flow Layout", container: FlowLayout },
     css: { name: "Progressive Css Layout", container: CssLayout },
     manual: { name: "Manual Layout", container: ManualLayout },
