@@ -6,7 +6,7 @@ NOTICE: Adobe permits you to use, modify, and distribute this file in
 accordance with the terms of the Adobe license agreement accompanying
 it. If you have received this file from a source other than Adobe,
 then your use, modification, or distribution of it requires the prior
-written permission of Adobe.
+written permission of Adobe. 
 */
 import "../common/ResizeObserver";
 import ResizeObserver, { ResizeObserverEntry, UxpResizeObserver } from '../common/ResizeObserver';
@@ -82,7 +82,7 @@ export default class VirtualManager<T> {
     private containerPadding: Margin = new Margin(0)
     private placeholder: HTMLDivElement
     private containerWidth: number;
-
+    
     constructor(props: ContainerProperties<T>) {
         this.container = props.container;
         this.containerWidth = this.container.clientWidth;
@@ -91,7 +91,7 @@ export default class VirtualManager<T> {
         this.itemKey = props.itemKey;
         this.itemType = props.itemType;
         this.itemRect = props.itemRect;
-        this.onresize = this.onresize.bind(this);
+        this.onresize = this.onresize.bind(this);      
         this.resizeObserver = new ResizeObserver(this.onresize);
         this.updateAndLayout = this.updateAndLayout.bind(this);
         this.container.addEventListener("scroll", (e) => {
@@ -121,7 +121,7 @@ export default class VirtualManager<T> {
                 checkForDuplicates.add(key);
                 this.itemLookup.set(key, item);
             }
-
+    
             this.updateIndexes(true);
             this.layoutChildren();
         }
@@ -217,7 +217,7 @@ export default class VirtualManager<T> {
             }
 
             let type = this.itemType(item)!;
-            let properties = this.getItemProperties(key, type);
+            let properties = this.getItemProperties(key, type);            
             let classProps = this.classProperties.get(type);
             if (!classProps) {
                 console.warn("missing class properties: " + type);
@@ -297,6 +297,43 @@ export default class VirtualManager<T> {
         }
     }
 
+    /**
+     * Returns the index of the first and last visible items in the current scroll window.
+     */
+    private getFirstAndLastVisibleItemIndex(
+        visibleTop = this.container.scrollTop,
+        visibleBottom = visibleTop + this.container.clientHeight
+    ) {
+        let first: number | undefined
+        let last: number | undefined
+        for (let index = 0; index < this.items.length; index++) {
+            let item = this.items[index];
+            let rect = this.getItemRect(item);
+            if (rect == null) {
+                break;
+            }
+            if (first == null && (rect.y + rect.height) > visibleTop) {
+                first = index;
+            }
+            if (rect.y <= visibleBottom) {
+                if (first != null) {
+                    last = index;
+                }
+            }
+            else {
+                break;
+            }
+        }
+        if (first == null) {
+            first = 0;
+        }
+        if (last == null) {
+            //  if nothings rendered yet this is a guess
+            last = Math.min(this.items.length - 1, first + initialVisibleItemCount);
+        }
+        return [first, last];
+    }
+
     get pageSize() {
         return this.container.clientHeight;
     }
@@ -309,7 +346,7 @@ export default class VirtualManager<T> {
         return 500;
     }
 
-    private getRenderItemIndices(scrollDirection: number) {
+    private getFirstAndLastRenderItemIndex(scrollDirection: number) {
         let top = Math.max(0, this.container.scrollTop);
         let { pageSize, prerenderScrollDirection, prerenderOtherDirection } = this;
         if (scrollDirection === 0) {
@@ -323,28 +360,18 @@ export default class VirtualManager<T> {
         // then expand bottom by whatever is remaining. (if this is larger than content area, that is fine)
         bottom = top + totalPagesHeight;
 
-        const renderKeys = new Set<string>();
-        const existingKeys = new Set<string>();
+        let firstAndLast = this.getFirstAndLastVisibleItemIndex(top, bottom);
 
-        for (let index = 0; index < this.items.length; index++) {
-            const item = this.items[index];
-            const key = this.itemKey(item);
-
-            existingKeys.add(key);
-
-            const rect = this.getItemRect(item);
-            if (rect && ((rect.y + rect.height) > top) && (rect.y <= bottom)) {
-                renderKeys.add(key);
-            }
-        }
-
-        // we also want to always keep rendering a focused item so add this too
-        const focusedKey = this.getFocusedItemKey();
-        if (focusedKey) {
-            renderKeys.add(focusedKey);
-        }
-
-        return [ renderKeys, existingKeys ];
+        // console.log(JSON.stringify({
+        //     scroll: scrollDirection,
+        //     t: this.container.scrollTop,
+        //     b: this.container.scrollTop + pageSize,
+        //     pageSize,
+        //     page: pageSize, top, bottom,
+        //     firstAndLast,
+        //     placeholderHeight: this.placeholder.style.height
+        // }));
+        return firstAndLast;
     }
 
     private getFocusedItemKey() {
@@ -370,7 +397,7 @@ export default class VirtualManager<T> {
         const scrollTop = this.container.scrollTop;
         const scrollDelta = scrollTop - this.lastScrollTop;
         this.lastScrollTop = scrollTop;
-
+        
         const previousItems = this.previousItems || this.items;
         this.previousItems = this.items;
         const itemsProbablyChanged = this.items.length !== previousItems.length;
@@ -381,9 +408,22 @@ export default class VirtualManager<T> {
             this.scrollDirection = Math.sign(scrollDelta);
         }
 
-        // Get a set of the items we want to render, and a set of all the items
-        // (do this in one method, so we only need to iterate through all the items once)
-        const [ renderKeys, existingKeys ] = this.getRenderItemIndices(this.scrollDirection);
+        const [firstRender, lastRender] = this.getFirstAndLastRenderItemIndex(this.scrollDirection);
+
+        const renderKeys = new Set<string>();
+        for (let i = firstRender; i <= lastRender; i++) {
+            renderKeys.add(this.itemKey(this.items[i]));
+        }
+        // we also want to always keep rendering a focused item so check
+        const focusedKey = this.getFocusedItemKey();
+        if (focusedKey) {
+            renderKeys.add(focusedKey);
+        }
+
+        const existingKeys = new Set<string>();
+        for (let item of this.items) {
+            existingKeys.add(this.itemKey(item));
+        }
 
         const getType = (key: string) => {
             if (key != null) {
@@ -414,10 +454,10 @@ export default class VirtualManager<T> {
             }
         });
 
-        // console.log({ existingKeys, renderKeys, newKeys })
+        // console.log({ existingKeys, renderKeys, newKeys, firstRender, lastRender })
 
         // we do a deep compare as we don't want to cause react re-rendering unless our rendered item renderKeys have changed.
-        if (oldKeys.length !== newKeys.length || JSON.stringify(oldKeys) !== JSON.stringify(newKeys)) {
+        if (JSON.stringify(oldKeys) !== JSON.stringify(newKeys)) {
             // const debug = true;
             // if (debug) {
             //     let counts: any = {};
