@@ -6,9 +6,9 @@ NOTICE: Adobe permits you to use, modify, and distribute this file in
 accordance with the terms of the Adobe license agreement accompanying
 it. If you have received this file from a source other than Adobe,
 then your use, modification, or distribution of it requires the prior
-written permission of Adobe. 
+written permission of Adobe.
 */
-import React, { useState, useRef, forwardRef, useImperativeHandle, RefForwardingComponent, Ref, MutableRefObject } from 'react';
+import React, { useState, useRef, useMemo, forwardRef, useImperativeHandle, RefForwardingComponent, Ref, MutableRefObject } from 'react';
 import VirtualManager, { ItemProperty } from './VirtualManager';
 import memoize from '../common/memoize';
 import '../common/shims';
@@ -43,7 +43,7 @@ function createPropertyGetter<T,V>(
 
 export default forwardRef(function Virtualizer<T>(properties: VirtualizerProperties<T>, ref: Ref<VirtualizerInputHandles>) {
     let { items, itemKey, itemType, itemRect, scrollToItem, style, children: factory, ...otherProps } = properties;
-    const itemKeyFunction = memoize(createPropertyGetter(itemKey, () => {
+    const itemKeyFunction = useMemo(() => memoize(createPropertyGetter(itemKey, () => {
         //  if user provides no key property/function
         //  then we use the item index as key
         const itemToIndex = new Map<T,string>(items.map((item, index) => [item, String(index)]));
@@ -52,9 +52,9 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
         if (typeof value !== 'string' || value.length === 0) {
             throw new Error(`Invalid key, expected a unique string, actual: (${JSON.stringify(value || null)}) for item: ${JSON.stringify(item)}`);
         }
-    }));
-    const itemTypeFunction = memoize(createPropertyGetter(itemType, () => () => "default"));
-    const itemRectFunction = createPropertyGetter(itemRect);
+    })), [ itemKey, items ]);
+    const itemTypeFunction = useMemo(() => memoize(createPropertyGetter(itemType, () => () => "default")), [ itemType, items ]);
+    const itemRectFunction = useMemo(() => createPropertyGetter(itemRect), [ itemRect, items ]);
     let [renderKeys, setRenderKeys] = useState(new Array<string>());
     // we use a ref so we can persist the manager between calls to this component function.
     const cache = useRef<{ container?: HTMLDivElement }>();
