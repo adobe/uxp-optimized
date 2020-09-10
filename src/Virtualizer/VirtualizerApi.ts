@@ -2,6 +2,7 @@ import { ReactElement, CSSProperties } from 'react';
 
 export type VirtualizerInputHandles = {
     scrollToItem(key: string): void
+    scrollBy(x: number, y: number): void
 }
 
 export type VirtualizerProperties<T = any> = {

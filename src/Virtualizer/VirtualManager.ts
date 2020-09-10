@@ -102,7 +102,6 @@ export default class VirtualManager<T> {
         this.resizeObserver = new ResizeObserver(this.onresize);
         this.updateAndLayout = this.updateAndLayout.bind(this);
         this.container.addEventListener("scroll", (e) => {
-            // console.log("+++++++++++++ container scroll event", e);
             this.updateAndLayout();
         });
         this.placeholder = document.createElement("div");
@@ -466,13 +465,9 @@ export default class VirtualManager<T> {
             //     }
             //     console.log(JSON.stringify(counts, null, 2));
             // }
-            // console.log(`00000 setRenderKeys scroll: ${this.scrollDirection} ${Date.now() % 10000}`);
             this.setRenderKeys(newKeys);
             // this.renderKeys won't change till react re-renders and then calls VirtualManager.update().
             return true;
-        }
-        else {
-            // console.log("ZZZZZ skipIndices " + (Date.now() % 10000));
         }
         return false;
     }
