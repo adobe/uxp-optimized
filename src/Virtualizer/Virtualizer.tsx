@@ -65,6 +65,19 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
     for (let item of items) {
         keyToItem.set(itemKeyFunction(item), item);
     }
+    function scrollByFunction(x: number, y: number) {
+        const container = cache.current!.container;
+        // x is ignored, since we only scroll vertically
+        if (container && y) {
+            // Would be cleaner to use container.scrollBy, but UXP doesn't support this
+            // Instead, we need to compute the scrollTop to set based on the passed in offset
+            const clientHeight = container.clientHeight;
+            const scrollHeight = container.scrollHeight;
+            const maxScrollTop = Math.max(0, scrollHeight - clientHeight);
+            const scrollTop = Math.max(0, Math.min(maxScrollTop, container.scrollTop + y));
+            container.scrollTo({ top: scrollTop });
+        }
+    }
     function scrollToItemFunction(key: string) {
         let container = cache.current!.container
         if (container) {
@@ -81,7 +94,10 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
             }
         }
     }
-    useImperativeHandle(ref, () => ({ scrollToItem: scrollToItemFunction }));
+    useImperativeHandle(ref, () => ({
+        scrollToItem: scrollToItemFunction,
+        scrollBy: scrollByFunction
+    }));
     function setContainer(container) {
         if (container) {
             if (ref) {
