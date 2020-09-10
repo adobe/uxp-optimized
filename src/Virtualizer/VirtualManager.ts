@@ -320,9 +320,7 @@ export default class VirtualManager<T> {
                     this.scrollAnchor = null;
                 }
                 else {
-                    // requestAnimationFrame(() => {
-                        this.container.scrollTop = this.container.scrollTop - correction;
-                    // });
+                    this.container.scrollTop = this.container.scrollTop - correction;
                 }
             }
         }
@@ -440,8 +438,6 @@ export default class VirtualManager<T> {
                 renderKeys.add(key);
             }
         }
-        // track whether or not we had presizeKeys last render.
-        // and we can kickoff re-rendering till everything has been presized.
 
         return [ renderKeys, existingKeys ];
     }
