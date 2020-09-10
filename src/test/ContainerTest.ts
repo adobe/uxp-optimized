@@ -172,16 +172,16 @@ describe('Container', function() {
             // JSDOM doesn't implement scrollTo, so we have to fake it:
             container.scrollTo = (options?) => container.scrollTop = options.top;
 
-            scrollerAPI.scrollBy(100);
+            scrollerAPI.scrollBy(0, 100);
             assert(container.scrollTop === 100);
 
-            scrollerAPI.scrollBy(-50);
+            scrollerAPI.scrollBy(0, -50);
             assert(container.scrollTop === 50);
 
-            scrollerAPI.scrollBy(-100);
+            scrollerAPI.scrollBy(0, -100);
             assert(container.scrollTop === 0);
 
-            scrollerAPI.scrollBy(1000);
+            scrollerAPI.scrollBy(0, 1000);
             assert(container.scrollTop === 600); // Max is scrollHeight - clientHeight
         });
     });
