@@ -44,8 +44,8 @@ export function getSampleItems() {
     return items;
 }
 
-export function getSampleContainer(items) {
-    return <Container items={items} itemKey="key" itemType="type" itemRect="rect" className="SampleContainer">
+export function getSampleContainer(items, getAPI?) {
+    return <Container items={items} itemKey="key" itemType="type" itemRect="rect" className="SampleContainer" ref={ getAPI }>
         {
             item => item.row
                 ? <Row>{item.row}</Row>
