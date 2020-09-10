@@ -14,7 +14,6 @@ import Rect from "../common/Rect";
 import Margin from "../common/Margin";
 import getStableArray from "./getStableArray";
 import React, { ReactElement } from "react";
-import { isUXP } from "..";
 
 const initialVisibleItemCount = 30;
 
@@ -41,8 +40,16 @@ type ClassProperties = {
     obsolete?: boolean
 }
 
-type ItemProperties = Rect & {
-    type: string
+class ItemProperties implements Rect {
+    x: number = 0;
+    y: number = 0;
+    width: number = 0;
+    height: number = 0;
+    type: string;
+    containerWidthWhenSized: number = 0;
+    constructor(type) {
+        this.type = type;
+    }
 }
 
 function isHTMLElement(node: Node): node is HTMLElement {
@@ -122,8 +129,7 @@ export default class VirtualManager<T> {
                 this.itemLookup.set(key, item);
             }
 
-            this.updateIndexes(true);
-            this.layoutChildren();
+            this.updateAndLayout(true);
         }
 
         return this.renderKeys;
@@ -155,7 +161,7 @@ export default class VirtualManager<T> {
         })
     }
 
-    getItemRect(item: T): Rect | null {
+    getItemRect(item: T, key?: string): Rect | null {
         if (item != null) {
             let rect = this.itemRect != null ? this.itemRect(item) : null;
             if (rect != null) {
@@ -164,14 +170,13 @@ export default class VirtualManager<T> {
                 }
                 return rect;
             }
-            let key = this.itemKey(item);
+            if (key == null) {
+                key = this.itemKey(item);
+            }
             if (key != null) {
-                let type = this.itemType(item);
-                if (type != null) {
-                    let props = this.itemProperties[key];
-                    if (props != null) {
-                        return props;
-                    }
+                let props = this.itemProperties[key];
+                if (props != null) {
+                    return props;
                 }
             }
         }
@@ -181,15 +186,15 @@ export default class VirtualManager<T> {
     isScrolling = false
     updateAndLayout(forceLayout = false) {
         this.isScrolling = true;
-        if (this.updateIndexes() || forceLayout) {
+        let needsLayout = this.updateIndexes()
+        this.ensureElementsObservedAndSized();
+        if (needsLayout || forceLayout) {
             this.layoutChildren();
         }
         this.isScrolling = false;
     }
 
     private layoutChildren() {
-        this.ensureElementsObservedAndSized();
-
         // create quick element lookup by key.
         let elementLookup = this.getElementLookupByKey();
         let x = 0, y = 0, width = this.containerWidth - this.containerPadding.horizontal, height = 0;
@@ -203,7 +208,7 @@ export default class VirtualManager<T> {
             let key = this.itemKey(item)!;
             let element = elementLookup.get(key);
             if (this.itemRect != null) {
-                let rect = this.getItemRect(item)!;
+                let rect = this.getItemRect(item, key)!;
                 if (element) {
                     const { style } = element;
                     style.position = `absolute`;
@@ -325,6 +330,10 @@ export default class VirtualManager<T> {
 
         const renderKeys = new Set<string>();
         const existingKeys = new Set<string>();
+        // keys which we are adding so that we can pre-size them.
+        // only used without manual layout.
+        const presize = this.itemRect == null;
+        const presizeKeys = presize ? new Map<string,string>() : null;
 
         for (let index = 0; index < this.items.length; index++) {
             const item = this.items[index];
@@ -332,9 +341,18 @@ export default class VirtualManager<T> {
 
             existingKeys.add(key);
 
-            const rect = this.getItemRect(item);
+            const rect = this.getItemRect(item, key);
             if (rect && ((rect.y + rect.height) > top) && (rect.y <= bottom)) {
                 renderKeys.add(key);
+            }
+            else if (presizeKeys != null) {
+                let type = this.itemType(item);
+                if (!presizeKeys.has(type)) {
+                    let props = this.itemProperties[key];
+                    if (props == null || props.containerWidthWhenSized !== this.containerWidth) {
+                        presizeKeys.set(type, key);
+                    }
+                }
             }
         }
 
@@ -350,6 +368,20 @@ export default class VirtualManager<T> {
         if (focusedKey) {
             renderKeys.add(focusedKey);
         }
+
+        // finally, if we are pre-sizing elements we need to add some of each type.
+        if (presizeKeys && presizeKeys.size > 0) {
+            // console.log("presize: " + [...presizeKeys.values()].join(","));
+            for (let key of presizeKeys.values()) {
+                renderKeys.add(key);
+            }
+            // requestAnimationFrame(() => {
+            //     this.updateAndLayout();
+            // })
+            // console.log("renderKeys: " + [...renderKeys].join(","))
+        }
+        // track whether or not we had presizeKeys last render.
+        // and we can kickoff re-rendering till everything has been presized.
 
         return [ renderKeys, existingKeys ];
     }
@@ -369,7 +401,7 @@ export default class VirtualManager<T> {
     private lastScrollTop: number = 0;
     private scrollDirection = 0; // 1 = down, -1 = up, 0 = none
     private previousItems?: T[]
-    private updateIndexes(force = false) {
+    private updateIndexes() {
         if (this.pageSize === 0) {
             return;
         }
@@ -450,7 +482,12 @@ export default class VirtualManager<T> {
             this.containerPadding = Margin.fromCssPadding(getComputedStyle(element));
         }
         let { key, type } = element.dataset;
+        // console.log({ key, type })
         if (key && type) {
+            // let debug = key == "42";
+            // if (debug) {
+            //     debugger;
+            // }
             //  cache element size
             let properties = this.itemProperties[key];
             if (properties == null) {
@@ -460,27 +497,31 @@ export default class VirtualManager<T> {
             // since reading them forces immediate layout.
             const width = element.offsetWidth;
             const height = element.offsetHeight;
-            if (width > 0 && height > 0 && (width !== properties.width || height !== properties.height)) {
-                properties.width = element.offsetWidth;
-                properties.height = element.offsetHeight;
+            if (width > 0 && height > 0) {
+                let changed = (width !== properties.width || height !== properties.height);
+                properties.width = width;
+                properties.height = height;
+                properties.containerWidthWhenSized = this.containerWidth;
                 //  cache ComputedCssProperties by className
-                let classProps = this.classProperties.get(type);
-                if (classProps == null || classProps.obsolete) {
-                    let css = getComputedStyle(element);
-                    if (classProps == null) {
-                        classProps = {} as ClassProperties;
-                        this.classProperties.set(type, classProps);
+                if (changed) {
+                    let classProps = this.classProperties.get(type);
+                    if (classProps == null || classProps.obsolete) {
+                        let css = getComputedStyle(element);
+                        if (classProps == null) {
+                            classProps = {} as ClassProperties;
+                            this.classProperties.set(type, classProps);
+                        }
+                        if (classProps.cssInline == null) {
+                            //  we only record the first css display.
+                            //  chrome is changing inline-block to block occasionally
+                            //  this does mean clients cannot change display
+                            //  with responsive media queries.
+                            classProps.cssInline = (css.display || "").indexOf("inline") >= 0;
+                        }
+                        classProps.cssMargin = Margin.fromCssMargin(css)
+                        classProps.width = element.offsetWidth
+                        classProps.height = element.offsetHeight
                     }
-                    if (classProps.cssInline == null) {
-                        //  we only record the first css display.
-                        //  chrome is changing inline-block to block occasionally
-                        //  this does mean clients cannot change display
-                        //  with responsive media queries.
-                        classProps.cssInline = (css.display || "").indexOf("inline") >= 0;
-                    }
-                    classProps.cssMargin = Margin.fromCssMargin(css)
-                    classProps.width = element.offsetWidth
-                    classProps.height = element.offsetHeight
                 }
             }
         }
@@ -518,7 +559,7 @@ export default class VirtualManager<T> {
     private getItemProperties(key: string, type: string): ItemProperties {
         let props = this.itemProperties[key];
         if (props == null) {
-            props = this.itemProperties[key] = { type, x: 0, y: 0, width: 0, height: 0 };
+            props = this.itemProperties[key] = new ItemProperties(type);
         }
         let classProps = this.classProperties.get(type);
         if (classProps) {

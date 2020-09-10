@@ -111,7 +111,7 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
     }
     style = Object.assign({ position: "relative", overflowX: "hidden", overflowY: "scroll", flex: "1 1 auto", zIndex: 0 }, style);
     return (
-        <div ref={setContainer as any} style={style} {...otherProps}>
+    <div ref={setA as any} style={style} {...otherProps}>
             {
                 VirtualManager.getReactElements(
                     items,
