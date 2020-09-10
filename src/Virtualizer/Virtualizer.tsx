@@ -78,7 +78,7 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
         let container = cache.current!.container
         if (container) {
             let manager = VirtualManager.instance(container);
-            manager?.scrollToItem(key);
+            manager?.scrollToItem(key, { position: properties?.scrollToPosition });
         }
     }
     useImperativeHandle(ref, () => ({

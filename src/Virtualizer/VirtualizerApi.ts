@@ -48,6 +48,10 @@ export type VirtualizerProperties<T = any> = {
      * Alternatively you can use a 'ref' and call 'scrollToItem(key: string)'.
      */
     scrollToItem?: string;
+    /**
+     * Number between 0 and 1 where 0 means top of the visible window and 1 means the bottom.
+     */
+    scrollToPosition?: number;
     id?: string;
     className?: string;
     style?: CSSProperties;
