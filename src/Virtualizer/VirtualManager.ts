@@ -14,7 +14,6 @@ import Rect from "../common/Rect";
 import Margin from "../common/Margin";
 import getStableArray from "./getStableArray";
 import React, { ReactElement } from "react";
-import { isUXP } from "..";
 
 const initialVisibleItemCount = 30;
 
@@ -30,19 +29,65 @@ type ContainerProperties<T> = {
     setRenderKeys(value: string[]): void
 }
 
-type ClassProperties = {
-    cssInline: boolean
-    cssMargin: Margin
-    width: number
-    height: number
+/**
+ * Used when scrolling to item with flow layout.
+ * We don't really know the size of intervening items,
+ * so we may have to correct scrollTop to keep item in view after sizing.
+ */
+type ScrollAnchor = {
+    itemKey: string,
+    itemPin: number, // 0 = top, 0.5 = middle, 1 = bottom
+    windowPin: number, // 0 = top, 0.5 = middle, 1 = bottom
+}
+
+class ClassProperties {
+    type!: string;
+    cssInline!: boolean;
+    cssMargin!: Margin;
+    width!: number;
+    height!: number;
     //  we mark this on all class properties after a container resize
     //  so we can try to reload them if we still have
     //  components of their class present
-    obsolete?: boolean
+    valid: boolean = false;
+
+    totalItemWidth = 0;
+    totalItemHeight = 0;
+    totalItemCount = 0;
+
+    constructor(type: string) {
+        this.type = type;
+    }
+
+    invalidate() {
+        this.valid = false;
+        this.totalItemCount = 0;
+        this.totalItemWidth = 0;
+        this.totalItemHeight = 0;
+    }
+
+    //  this function stores and tracks an average item size of this type.
+    //  this helps us more accurately estimate scroll location when doing flow layout.
+    setItemSize(width: number, height: number) {
+        this.totalItemWidth += width;
+        this.totalItemHeight += height;
+        this.totalItemCount++;
+
+        // recalculate width/height
+        this.width = Math.round(this.totalItemWidth / this.totalItemCount);
+        this.height = Math.round(this.totalItemHeight / this.totalItemCount);
+    }
 }
 
-type ItemProperties = Rect & {
-    type: string
+class ItemProperties implements Rect {
+    x: number = 0;
+    y: number = 0;
+    width: number = 0;
+    height: number = 0;
+    type: string;
+    constructor(type) {
+        this.type = type;
+    }
 }
 
 function isHTMLElement(node: Node): node is HTMLElement {
@@ -82,6 +127,7 @@ export default class VirtualManager<T> {
     private containerPadding: Margin = new Margin(0)
     private placeholder: HTMLDivElement
     private containerWidth: number;
+    private scrollAnchor: ScrollAnchor | null = null;
 
     constructor(props: ContainerProperties<T>) {
         this.container = props.container;
@@ -95,7 +141,6 @@ export default class VirtualManager<T> {
         this.resizeObserver = new ResizeObserver(this.onresize);
         this.updateAndLayout = this.updateAndLayout.bind(this);
         this.container.addEventListener("scroll", (e) => {
-            // console.log("+++++++++++++ container scroll event", e);
             this.updateAndLayout();
         });
         this.placeholder = document.createElement("div");
@@ -122,8 +167,7 @@ export default class VirtualManager<T> {
                 this.itemLookup.set(key, item);
             }
 
-            this.updateIndexes(true);
-            this.layoutChildren();
+            this.updateAndLayout(true);
         }
 
         return this.renderKeys;
@@ -155,7 +199,7 @@ export default class VirtualManager<T> {
         })
     }
 
-    getItemRect(item: T): Rect | null {
+    getItemRect(item: T, key?: string): Rect | null {
         if (item != null) {
             let rect = this.itemRect != null ? this.itemRect(item) : null;
             if (rect != null) {
@@ -164,14 +208,13 @@ export default class VirtualManager<T> {
                 }
                 return rect;
             }
-            let key = this.itemKey(item);
+            if (key == null) {
+                key = this.itemKey(item);
+            }
             if (key != null) {
-                let type = this.itemType(item);
-                if (type != null) {
-                    let props = this.itemProperties[key];
-                    if (props != null) {
-                        return props;
-                    }
+                let props = this.itemProperties[key];
+                if (props != null) {
+                    return props;
                 }
             }
         }
@@ -181,15 +224,15 @@ export default class VirtualManager<T> {
     isScrolling = false
     updateAndLayout(forceLayout = false) {
         this.isScrolling = true;
-        if (this.updateIndexes() || forceLayout) {
+        let needsLayout = this.updateIndexes()
+        this.ensureElementsObservedAndSized();
+        if (needsLayout || forceLayout) {
             this.layoutChildren();
         }
         this.isScrolling = false;
     }
 
     private layoutChildren() {
-        this.ensureElementsObservedAndSized();
-
         // create quick element lookup by key.
         let elementLookup = this.getElementLookupByKey();
         let x = 0, y = 0, width = this.containerWidth - this.containerPadding.horizontal, height = 0;
@@ -203,7 +246,7 @@ export default class VirtualManager<T> {
             let key = this.itemKey(item)!;
             let element = elementLookup.get(key);
             if (this.itemRect != null) {
-                let rect = this.getItemRect(item)!;
+                let rect = this.getItemRect(item, key)!;
                 if (element) {
                     const { style } = element;
                     style.position = `absolute`;
@@ -257,8 +300,30 @@ export default class VirtualManager<T> {
             }
         }
 
+        this.correctForScrollAnchor();
+
         // increase the placeholders height to match our layed out height.
         this.placeholder.style.height = px(height);
+    }
+
+    private correctForScrollAnchor() {
+        if (this.scrollAnchor != null) {
+            let itemProps = this.itemProperties[this.scrollAnchor.itemKey];
+            if (itemProps != null) {
+                let currentOffset = itemProps.y;
+                let targetOffset
+                    = this.container.scrollTop
+                    - itemProps.height * this.scrollAnchor.itemPin
+                    + this.container.clientHeight * this.scrollAnchor.windowPin;
+                let correction = targetOffset - currentOffset;
+                if (correction === 0) {
+                    this.scrollAnchor = null;
+                }
+                else {
+                    this.container.scrollTop = this.container.scrollTop - correction;
+                }
+            }
+        }
     }
 
     private getElementLookupByKey() {
@@ -309,6 +374,10 @@ export default class VirtualManager<T> {
         return 500;
     }
 
+    get isManualLayout() {
+        return this.itemRect != null;
+    }
+
     private getRenderItemIndices(scrollDirection: number) {
         let top = Math.max(0, this.container.scrollTop);
         let { pageSize, prerenderScrollDirection, prerenderOtherDirection } = this;
@@ -325,6 +394,12 @@ export default class VirtualManager<T> {
 
         const renderKeys = new Set<string>();
         const existingKeys = new Set<string>();
+        // keys which we are adding so that we can pre-size them.
+        // only used without manual layout.
+        // This pre-sizing code ensures that we always contain at least one of each
+        // item type in the document so that we can capture sizing and css class properties.
+        const presize = !this.isManualLayout;
+        const presizeTypes = presize ? new Map<string,string>() : null;
 
         for (let index = 0; index < this.items.length; index++) {
             const item = this.items[index];
@@ -332,9 +407,15 @@ export default class VirtualManager<T> {
 
             existingKeys.add(key);
 
-            const rect = this.getItemRect(item);
+            const rect = this.getItemRect(item, key);
             if (rect && ((rect.y + rect.height) > top) && (rect.y <= bottom)) {
                 renderKeys.add(key);
+            }
+            else if (presizeTypes != null) {
+                let type = this.itemType(item);
+                if (!presizeTypes.has(type)) {
+                    presizeTypes.set(type, key);
+                }
             }
         }
 
@@ -349,6 +430,13 @@ export default class VirtualManager<T> {
         const focusedKey = this.getFocusedItemKey();
         if (focusedKey) {
             renderKeys.add(focusedKey);
+        }
+
+        // finally, if we are pre-sizing elements we need to add some of each type.
+        if (presizeTypes && presizeTypes.size > 0) {
+            for (let key of presizeTypes.values()) {
+                renderKeys.add(key);
+            }
         }
 
         return [ renderKeys, existingKeys ];
@@ -369,7 +457,7 @@ export default class VirtualManager<T> {
     private lastScrollTop: number = 0;
     private scrollDirection = 0; // 1 = down, -1 = up, 0 = none
     private previousItems?: T[]
-    private updateIndexes(force = false) {
+    private updateIndexes() {
         if (this.pageSize === 0) {
             return;
         }
@@ -434,13 +522,9 @@ export default class VirtualManager<T> {
             //     }
             //     console.log(JSON.stringify(counts, null, 2));
             // }
-            // console.log(`00000 setRenderKeys scroll: ${this.scrollDirection} ${Date.now() % 10000}`);
             this.setRenderKeys(newKeys);
             // this.renderKeys won't change till react re-renders and then calls VirtualManager.update().
             return true;
-        }
-        else {
-            // console.log("ZZZZZ skipIndices " + (Date.now() % 10000));
         }
         return false;
     }
@@ -460,27 +544,29 @@ export default class VirtualManager<T> {
             // since reading them forces immediate layout.
             const width = element.offsetWidth;
             const height = element.offsetHeight;
-            if (width > 0 && height > 0 && (width !== properties.width || height !== properties.height)) {
-                properties.width = element.offsetWidth;
-                properties.height = element.offsetHeight;
+            if (width > 0 && height > 0) {
+                let changed = (width !== properties.width || height !== properties.height);
+                properties.width = width;
+                properties.height = height;
                 //  cache ComputedCssProperties by className
-                let classProps = this.classProperties.get(type);
-                if (classProps == null || classProps.obsolete) {
-                    let css = getComputedStyle(element);
-                    if (classProps == null) {
-                        classProps = {} as ClassProperties;
-                        this.classProperties.set(type, classProps);
+                if (changed) {
+                    let classProps = this.classProperties.get(type);
+                    if (classProps == null || !classProps.valid) {
+                        let css = getComputedStyle(element);
+                        if (classProps == null) {
+                            classProps = new ClassProperties(type);
+                            this.classProperties.set(type, classProps);
+                        }
+                        if (classProps.cssInline == null) {
+                            //  we only record the first css display.
+                            //  chrome is changing inline-block to block occasionally
+                            //  this does mean clients cannot change display
+                            //  with responsive media queries.
+                            classProps.cssInline = (css.display || "").indexOf("inline") >= 0;
+                        }
+                        classProps.cssMargin = Margin.fromCssMargin(css)
                     }
-                    if (classProps.cssInline == null) {
-                        //  we only record the first css display.
-                        //  chrome is changing inline-block to block occasionally
-                        //  this does mean clients cannot change display
-                        //  with responsive media queries.
-                        classProps.cssInline = (css.display || "").indexOf("inline") >= 0;
-                    }
-                    classProps.cssMargin = Margin.fromCssMargin(css)
-                    classProps.width = element.offsetWidth
-                    classProps.height = element.offsetHeight
+                    classProps.setItemSize(width, height);
                 }
             }
         }
@@ -492,8 +578,8 @@ export default class VirtualManager<T> {
         for (let entry of entries) {
             if (entry.target === this.container) {
                 this.containerWidth = this.container.clientWidth;
-                for (let type in this.classProperties.keys()) {
-                    this.classProperties.get(type)!.obsolete = true;
+                for (let classProps of this.classProperties.values()) {
+                    classProps.invalidate();
                 }
                 // also reset placeholder size
                 this.placeholder.style.height = "0px";
@@ -514,11 +600,38 @@ export default class VirtualManager<T> {
         this.updateAndLayout(true);
     }
 
+    scrollToItem(key: string, options?: { position?: number }) {
+        let { container } = this;
+        let item = this.itemLookup.get(key);
+        if (item) {
+            let itemPin = options?.position ?? 0;
+            let windowPin = options?.position ?? 0;
+            const bounds = this.getItemRect(item);
+            if (bounds) {
+                const manualLayout = this.isManualLayout;
+                const clientHeight = container.clientHeight;
+                const scrollHeight = container.scrollHeight;
+                const targetScrollTop = Math.min(
+                    bounds.y - itemPin * bounds.height + windowPin * clientHeight,
+                    Math.max(0, scrollHeight + clientHeight)
+                );
+                if (manualLayout) {
+                    container.scrollTo({ top: targetScrollTop, behavior: "smooth" });
+                }
+                else {
+                    // with custom layout we need to pin.
+                    this.scrollAnchor = { itemKey: key, itemPin, windowPin }
+                    container.scrollTo({ top: targetScrollTop });
+                }
+            }
+        }
+    }
+
     private static readonly symbol = Symbol("VirtualManager.symbol");
     private getItemProperties(key: string, type: string): ItemProperties {
         let props = this.itemProperties[key];
         if (props == null) {
-            props = this.itemProperties[key] = { type, x: 0, y: 0, width: 0, height: 0 };
+            props = this.itemProperties[key] = new ItemProperties(type);
         }
         let classProps = this.classProperties.get(type);
         if (classProps) {

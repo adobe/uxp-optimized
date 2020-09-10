@@ -1,7 +1,14 @@
 import { ReactElement, CSSProperties } from 'react';
 
 export type VirtualizerInputHandles = {
-    scrollToItem(key: string): void
+    /**
+     * Scrolls an item into view.
+     * This is animated for manual layouts and instant for flow layouts.
+     * @param key the key for the item to scroll into view.
+     * @param options.position relative position to show item at: 0 = top of window, 1 = bottom of window.
+     */
+    scrollToItem(key: string, options?: { position?: number }): void
+    scrollBy(x: number, y: number): void
 }
 
 export type VirtualizerProperties<T = any> = {
