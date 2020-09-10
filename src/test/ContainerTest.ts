@@ -156,6 +156,34 @@ describe('Container', function() {
             children.forEach(checkVisible);
             assert(children.length === 22);
         });
+
+        it("should support scrollBy", async () => {
+            const target = document.getElementById("app")!;
+
+            let scrollerAPI;
+            const items = getSampleItems();
+            ReactDOM.render(getSampleContainer(items, api => scrollerAPI = api), target);
+            const container = target.firstElementChild as HTMLDivElement;
+            container.scrollTop = 0;
+
+            // JSDOM doesn't set scrollHeight, so we have to fake it:
+            Object.defineProperty(container, 'scrollHeight', { get: () => 1000 });
+
+            // JSDOM doesn't implement scrollTo, so we have to fake it:
+            container.scrollTo = (options?) => container.scrollTop = options.top;
+
+            scrollerAPI.scrollBy(100);
+            assert(container.scrollTop === 100);
+
+            scrollerAPI.scrollBy(-50);
+            assert(container.scrollTop === 50);
+
+            scrollerAPI.scrollBy(-100);
+            assert(container.scrollTop === 0);
+
+            scrollerAPI.scrollBy(1000);
+            assert(container.scrollTop === 600); // Max is scrollHeight - clientHeight
+        });
     });
 
     after(() => {
