@@ -29,15 +29,54 @@ type ContainerProperties<T> = {
     setRenderKeys(value: string[]): void
 }
 
-type ClassProperties = {
-    cssInline: boolean
-    cssMargin: Margin
-    width: number
-    height: number
+/**
+ * Used when scrolling to item with flow layout.
+ * We don't really know the size of intervening items,
+ * so we may have to correct scrollTop to keep item in view after sizing.
+ */
+type ScrollAnchor = {
+    itemKey: string,
+    itemPin: number, // 0 = top, 0.5 = middle, 1 = bottom
+    windowPin: number, // 0 = top, 0.5 = middle, 1 = bottom
+}
+
+class ClassProperties {
+    type!: string;
+    cssInline!: boolean;
+    cssMargin!: Margin;
+    width!: number;
+    height!: number;
     //  we mark this on all class properties after a container resize
     //  so we can try to reload them if we still have
     //  components of their class present
-    obsolete?: boolean
+    valid: boolean = false;
+
+    totalItemWidth = 0;
+    totalItemHeight = 0;
+    totalItemCount = 0;
+
+    constructor(type: string) {
+        this.type = type;
+    }
+
+    invalidate() {
+        this.valid = false;
+        this.totalItemCount = 0;
+        this.totalItemWidth = 0;
+        this.totalItemHeight = 0;
+    }
+
+    //  this function stores and tracks an average item size of this type.
+    //  this helps us more accurately estimate scroll location when doing flow layout.
+    setItemSize(width: number, height: number) {
+        this.totalItemWidth += width;
+        this.totalItemHeight += height;
+        this.totalItemCount++;
+
+        // recalculate width/height
+        this.width = Math.round(this.totalItemWidth / this.totalItemCount);
+        this.height = Math.round(this.totalItemHeight / this.totalItemCount);
+    }
 }
 
 class ItemProperties implements Rect {
@@ -46,7 +85,6 @@ class ItemProperties implements Rect {
     width: number = 0;
     height: number = 0;
     type: string;
-    containerWidthWhenSized: number = 0;
     constructor(type) {
         this.type = type;
     }
@@ -89,6 +127,7 @@ export default class VirtualManager<T> {
     private containerPadding: Margin = new Margin(0)
     private placeholder: HTMLDivElement
     private containerWidth: number;
+    private scrollAnchor: ScrollAnchor | null = null;
 
     constructor(props: ContainerProperties<T>) {
         this.container = props.container;
@@ -261,8 +300,32 @@ export default class VirtualManager<T> {
             }
         }
 
+        this.correctForScrollAnchor();
+
         // increase the placeholders height to match our layed out height.
         this.placeholder.style.height = px(height);
+    }
+
+    private correctForScrollAnchor() {
+        if (this.scrollAnchor != null) {
+            let itemProps = this.itemProperties[this.scrollAnchor.itemKey];
+            if (itemProps != null) {
+                let currentOffset = itemProps.y;
+                let targetOffset
+                    = this.container.scrollTop
+                    - itemProps.height * this.scrollAnchor.itemPin
+                    + this.container.clientHeight * this.scrollAnchor.windowPin;
+                let correction = targetOffset - currentOffset;
+                if (correction === 0) {
+                    this.scrollAnchor = null;
+                }
+                else {
+                    // requestAnimationFrame(() => {
+                        this.container.scrollTop = this.container.scrollTop - correction;
+                    // });
+                }
+            }
+        }
     }
 
     private getElementLookupByKey() {
@@ -313,6 +376,10 @@ export default class VirtualManager<T> {
         return 500;
     }
 
+    get isManualLayout() {
+        return this.itemRect != null;
+    }
+
     private getRenderItemIndices(scrollDirection: number) {
         let top = Math.max(0, this.container.scrollTop);
         let { pageSize, prerenderScrollDirection, prerenderOtherDirection } = this;
@@ -331,8 +398,10 @@ export default class VirtualManager<T> {
         const existingKeys = new Set<string>();
         // keys which we are adding so that we can pre-size them.
         // only used without manual layout.
-        const presize = this.itemRect == null;
-        const presizeKeys = presize ? new Map<string,string>() : null;
+        // This pre-sizing code ensures that we always contain at least one of each
+        // item type in the document so that we can capture sizing and css class properties.
+        const presize = !this.isManualLayout;
+        const presizeTypes = presize ? new Map<string,string>() : null;
 
         for (let index = 0; index < this.items.length; index++) {
             const item = this.items[index];
@@ -344,13 +413,10 @@ export default class VirtualManager<T> {
             if (rect && ((rect.y + rect.height) > top) && (rect.y <= bottom)) {
                 renderKeys.add(key);
             }
-            else if (presizeKeys != null) {
+            else if (presizeTypes != null) {
                 let type = this.itemType(item);
-                if (!presizeKeys.has(type)) {
-                    let props = this.itemProperties[key];
-                    if (props == null || props.containerWidthWhenSized !== this.containerWidth) {
-                        presizeKeys.set(type, key);
-                    }
+                if (!presizeTypes.has(type)) {
+                    presizeTypes.set(type, key);
                 }
             }
         }
@@ -369,15 +435,10 @@ export default class VirtualManager<T> {
         }
 
         // finally, if we are pre-sizing elements we need to add some of each type.
-        if (presizeKeys && presizeKeys.size > 0) {
-            // console.log("presize: " + [...presizeKeys.values()].join(","));
-            for (let key of presizeKeys.values()) {
+        if (presizeTypes && presizeTypes.size > 0) {
+            for (let key of presizeTypes.values()) {
                 renderKeys.add(key);
             }
-            // requestAnimationFrame(() => {
-            //     this.updateAndLayout();
-            // })
-            // console.log("renderKeys: " + [...renderKeys].join(","))
         }
         // track whether or not we had presizeKeys last render.
         // and we can kickoff re-rendering till everything has been presized.
@@ -477,12 +538,7 @@ export default class VirtualManager<T> {
             this.containerPadding = Margin.fromCssPadding(getComputedStyle(element));
         }
         let { key, type } = element.dataset;
-        // console.log({ key, type })
         if (key && type) {
-            // let debug = key == "42";
-            // if (debug) {
-            //     debugger;
-            // }
             //  cache element size
             let properties = this.itemProperties[key];
             if (properties == null) {
@@ -496,14 +552,13 @@ export default class VirtualManager<T> {
                 let changed = (width !== properties.width || height !== properties.height);
                 properties.width = width;
                 properties.height = height;
-                properties.containerWidthWhenSized = this.containerWidth;
                 //  cache ComputedCssProperties by className
                 if (changed) {
                     let classProps = this.classProperties.get(type);
-                    if (classProps == null || classProps.obsolete) {
+                    if (classProps == null || !classProps.valid) {
                         let css = getComputedStyle(element);
                         if (classProps == null) {
-                            classProps = {} as ClassProperties;
+                            classProps = new ClassProperties(type);
                             this.classProperties.set(type, classProps);
                         }
                         if (classProps.cssInline == null) {
@@ -514,9 +569,8 @@ export default class VirtualManager<T> {
                             classProps.cssInline = (css.display || "").indexOf("inline") >= 0;
                         }
                         classProps.cssMargin = Margin.fromCssMargin(css)
-                        classProps.width = element.offsetWidth
-                        classProps.height = element.offsetHeight
                     }
+                    classProps.setItemSize(width, height);
                 }
             }
         }
@@ -528,8 +582,8 @@ export default class VirtualManager<T> {
         for (let entry of entries) {
             if (entry.target === this.container) {
                 this.containerWidth = this.container.clientWidth;
-                for (let type in this.classProperties.keys()) {
-                    this.classProperties.get(type)!.obsolete = true;
+                for (let classProps of this.classProperties.values()) {
+                    classProps.invalidate();
                 }
                 // also reset placeholder size
                 this.placeholder.style.height = "0px";
@@ -548,6 +602,33 @@ export default class VirtualManager<T> {
         }
 
         this.updateAndLayout(true);
+    }
+
+    scrollToItem(key: string, options?: { position?: number }) {
+        let { container } = this;
+        let item = this.itemLookup.get(key);
+        if (item) {
+            let itemPin = options?.position ?? 0;
+            let windowPin = options?.position ?? 0;
+            const bounds = this.getItemRect(item);
+            if (bounds) {
+                const manualLayout = this.isManualLayout;
+                const clientHeight = container.clientHeight;
+                const scrollHeight = container.scrollHeight;
+                const targetScrollTop = Math.min(
+                    bounds.y - itemPin * bounds.height + windowPin * clientHeight,
+                    Math.max(0, scrollHeight + clientHeight)
+                );
+                if (manualLayout) {
+                    container.scrollTo({ top: targetScrollTop, behavior: "smooth" });
+                }
+                else {
+                    // with custom layout we need to pin.
+                    this.scrollAnchor = { itemKey: key, itemPin, windowPin }
+                    container.scrollTo({ top: targetScrollTop });
+                }
+            }
+        }
     }
 
     private static readonly symbol = Symbol("VirtualManager.symbol");

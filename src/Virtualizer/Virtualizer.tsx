@@ -61,10 +61,6 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
     if (cache.current == null) {
         cache.current = { };
     }
-    const keyToItem = new Map<string,T>();
-    for (let item of items) {
-        keyToItem.set(itemKeyFunction(item), item);
-    }
     function scrollByFunction(x: number, y: number) {
         const container = cache.current!.container;
         // x is ignored, since we only scroll vertically
@@ -82,16 +78,7 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
         let container = cache.current!.container
         if (container) {
             let manager = VirtualManager.instance(container);
-            const item = keyToItem.get(key);
-            if (item && manager) {
-                const bounds = manager.getItemRect(item);
-                if (bounds) {
-                    const clientHeight = container.clientHeight;
-                    const scrollHeight = container.scrollHeight;
-                    const targetScrollTop = Math.min(bounds.y, Math.max(0, scrollHeight - clientHeight));
-                    container.scrollTo({ top: targetScrollTop, behavior: "smooth" });
-                }
-            }
+            manager?.scrollToItem(key);
         }
     }
     useImperativeHandle(ref, () => ({
@@ -127,7 +114,7 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
     }
     style = Object.assign({ position: "relative", overflowX: "hidden", overflowY: "scroll", flex: "1 1 auto", zIndex: 0 }, style);
     return (
-    <div ref={setContainer as any} style={style} {...otherProps}>
+        <div ref={setContainer as any} style={style} {...otherProps}>
             {
                 VirtualManager.getReactElements(
                     items,
