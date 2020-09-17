@@ -583,6 +583,7 @@ export default class VirtualManager<T> {
                 }
                 // also reset placeholder size
                 this.placeholder.style.height = "0px";
+                // TODO: Find currently visible items and use ScrollAnchor to restore them to same position after relayout.
                 // also, clear all cached item sizes.
                 for (let key in this.itemProperties) {
                     let itemProps = this.itemProperties[key]!;
