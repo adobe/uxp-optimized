@@ -462,7 +462,14 @@ export default class VirtualManager<T> {
             return;
         }
 
-        const scrollTop = this.container.scrollTop;
+        // Clip scrollTop - UXP should do this automatically, but it doesn't due to bug UXP-10612
+        // Can remove this once UXP bug is fixed
+        const scrollHeight = this.container.scrollHeight;
+        const scrollTop = Math.max(0, Math.min(this.container.scrollTop, scrollHeight - this.container.clientHeight));
+        if (this.container.scrollTop !== scrollTop) {
+            this.container.scrollTop = scrollTop;
+        }
+
         const scrollDelta = scrollTop - this.lastScrollTop;
         this.lastScrollTop = scrollTop;
 
@@ -608,11 +615,7 @@ export default class VirtualManager<T> {
             if (bounds) {
                 const manualLayout = this.isManualLayout;
                 const clientHeight = container.clientHeight;
-                const scrollHeight = container.scrollHeight;
-                const targetScrollTop = Math.min(
-                    bounds.y - itemPin * bounds.height + windowPin * clientHeight,
-                    Math.max(0, scrollHeight + clientHeight)
-                );
+                const targetScrollTop = bounds.y - itemPin * bounds.height + windowPin * clientHeight;
                 if (manualLayout) {
                     container.scrollTo({ top: targetScrollTop, behavior: "smooth" });
                 }
