@@ -47,11 +47,16 @@ describe('Container', function() {
         it("should render initial items and respond to scrolling", async () => {
             // dom.window.document.body.clientHeight = 800;
             let target = document.getElementById("app");
-            // we have to stub clientHeight on the target or Virtualizer won't render
+            // we have to stub clientHeight/scrollHeight on the target or Virtualizer won't render
             Object.defineProperties(dom.window.HTMLElement.prototype, {
                 clientHeight: {
                     get() {
                         return this.parentElement === target ? containerHeight : itemHeight;
+                    }
+                },
+                scrollHeight: {
+                    get() {
+                        return 10000;
                     }
                 }
             })
