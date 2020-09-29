@@ -2,16 +2,6 @@
 # yarn lockfile v1
 
 
-"@adobe/react-spectrum-ui@^1.0.0":
-  version "1.0.1"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npm-adobe-platform-release/@adobe/react-spectrum-ui/-/react-spectrum-ui-1.0.1.tgz#5fe405d55534e06d3bf060f86a79935cda5f6615"
-  integrity sha1-X+QF1VU04G078GD4anmTXNpfZhU=
-
-"@adobe/spectrum-css@^2.18.0":
-  version "2.18.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npm-adobe-platform-release/@adobe/spectrum-css/-/spectrum-css-2.18.0.tgz#da9d1597f1c8cb16a1053484f727c2dd44003d04"
-  integrity sha1-2p0Vl/HIyxahBTSE9yfC3UQAPQQ=
-
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4":
   version "7.10.4"
   resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@babel/code-frame/-/code-frame-7.10.4.tgz#168da1a36e90da68ae8d49c0f1b48c7c6249213a"
@@ -847,7 +837,7 @@
     "@babel/types" "^7.4.4"
     esutils "^2.0.2"
 
-"@babel/runtime@^7.1.2", "@babel/runtime@^7.4.4", "@babel/runtime@^7.6.2", "@babel/runtime@^7.8.4":
+"@babel/runtime@^7.4.4", "@babel/runtime@^7.8.4":
   version "7.11.2"
   resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@babel/runtime/-/runtime-7.11.2.tgz#f549c13c754cc40b87644b9fa9f09a6a95fe0736"
   integrity sha1-9UnBPHVMxAuHZEufqfCaapX+BzY=
@@ -945,349 +935,6 @@
   dependencies:
     "@parcel/utils" "^1.11.0"
     physical-cpu-count "^2.0.0"
-
-"@react-aria/button@^3.2.0":
-  version "3.2.1"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-aria/button/-/button-3.2.1.tgz#d1c65ddbd47a7a7349321a72f013b98034812a40"
-  integrity sha1-0cZd29R6enNJMhpy8BO5gDSBKkA=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/focus" "^3.2.0"
-    "@react-aria/i18n" "^3.1.0"
-    "@react-aria/interactions" "^3.2.0"
-    "@react-aria/utils" "^3.2.0"
-    "@react-stately/toggle" "^3.2.0"
-    "@react-types/button" "^3.2.0"
-
-"@react-aria/checkbox@^3.2.0":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-aria/checkbox/-/checkbox-3.2.0.tgz#8c33df5a0319a8df776bdf9a9d0184e1c0ed30d0"
-  integrity sha1-jDPfWgMZqN93a9+anQGE4cDtMNA=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/label" "^3.1.0"
-    "@react-aria/toggle" "^3.1.0"
-    "@react-aria/utils" "^3.2.1"
-    "@react-stately/checkbox" "^3.0.0"
-    "@react-stately/toggle" "^3.1.0"
-    "@react-types/checkbox" "^3.2.0"
-
-"@react-aria/focus@^3.1.0", "@react-aria/focus@^3.2.0", "@react-aria/focus@^3.2.1":
-  version "3.2.1"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-aria/focus/-/focus-3.2.1.tgz#c51c91472737468a0633e34aaa76459f6df1aa8a"
-  integrity sha1-xRyRRyc3RooGM+NKqnZFn23xqoo=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/interactions" "^3.2.0"
-    "@react-aria/utils" "^3.2.1"
-    "@react-types/shared" "^3.2.0"
-    clsx "^1.1.1"
-
-"@react-aria/i18n@^3.1.0", "@react-aria/i18n@^3.1.1":
-  version "3.1.1"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-aria/i18n/-/i18n-3.1.1.tgz#f92d9d2577ed4d7993b6ac3553b7c9da8dcdfa73"
-  integrity sha1-+S2dJXftTXmTtqw1U7fJ2o3N+nM=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/ssr" "^3.0.0"
-    "@react-types/shared" "^3.1.0"
-    intl-messageformat "^2.2.0"
-
-"@react-aria/interactions@^3.1.0", "@react-aria/interactions@^3.2.0":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-aria/interactions/-/interactions-3.2.0.tgz#43d28489f8e1ec333127221ed1a2a7c92783dd01"
-  integrity sha1-Q9KEifjh7DMxJyIe0aKnySeD3QE=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/utils" "^3.2.0"
-    "@react-types/shared" "^3.2.0"
-
-"@react-aria/label@^3.1.0":
-  version "3.1.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-aria/label/-/label-3.1.0.tgz#ca9acd8e338cd37e52d4b85f84daeb2e5c49f47f"
-  integrity sha1-yprNjjOM035S1LhfhNrrLlxJ9H8=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/utils" "^3.1.0"
-    "@react-types/label" "^3.1.0"
-    "@react-types/shared" "^3.1.0"
-
-"@react-aria/overlays@^3.2.0":
-  version "3.3.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-aria/overlays/-/overlays-3.3.0.tgz#cbe0bbaec059ed4524868d9f2e5c2c3bb6d4e746"
-  integrity sha1-y+C7rsBZ7UUkho2fLlwsO7bU50Y=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/i18n" "^3.1.1"
-    "@react-aria/interactions" "^3.2.0"
-    "@react-aria/utils" "^3.2.1"
-    "@react-aria/visually-hidden" "^3.2.0"
-    "@react-stately/overlays" "^3.1.0"
-    "@react-types/button" "^3.2.0"
-    "@react-types/overlays" "^3.2.0"
-    dom-helpers "^3.3.1"
-
-"@react-aria/ssr@^3.0.0":
-  version "3.0.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-aria/ssr/-/ssr-3.0.0.tgz#6e31ac63f2ee3f6b706ef6ffc72858114b19c2ca"
-  integrity sha1-bjGsY/LuP2twbvb/xyhYEUsZwso=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-
-"@react-aria/toggle@^3.1.0":
-  version "3.1.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-aria/toggle/-/toggle-3.1.0.tgz#3f0423ff3b05187b4e374bbb65421fe5d95895d7"
-  integrity sha1-PwQj/zsFGHtON0u7ZUIf5dlYldc=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/focus" "^3.1.0"
-    "@react-aria/interactions" "^3.1.0"
-    "@react-aria/utils" "^3.1.0"
-    "@react-stately/toggle" "^3.1.0"
-    "@react-types/checkbox" "^3.1.0"
-    "@react-types/shared" "^3.1.0"
-    "@react-types/switch" "^3.1.0"
-
-"@react-aria/utils@^3.1.0", "@react-aria/utils@^3.2.0", "@react-aria/utils@^3.2.1":
-  version "3.2.1"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-aria/utils/-/utils-3.2.1.tgz#9242308ee9f1106a6bd9cb3af8702bf6528d110a"
-  integrity sha1-kkIwjunxEGpr2cs6+HAr9lKNEQo=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/ssr" "^3.0.0"
-    "@react-types/shared" "^3.2.0"
-    clsx "^1.1.1"
-
-"@react-aria/visually-hidden@^3.2.0":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-aria/visually-hidden/-/visually-hidden-3.2.0.tgz#740730368c8572de397c9d82ff5700fd7e034907"
-  integrity sha1-dAcwNoyFct45fJ2C/1cA/X4DSQc=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/interactions" "^3.2.0"
-    "@react-aria/utils" "^3.2.0"
-    clsx "^1.1.1"
-
-"@react-spectrum/button@^3.0.0-rc.1":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-spectrum/button/-/button-3.2.0.tgz#a630dd122ff0cd8f17cef9768b0bb2b8b305356e"
-  integrity sha1-pjDdEi/wzY8Xzvl2iwuyuLMFNW4=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/button" "^3.2.0"
-    "@react-aria/focus" "^3.2.0"
-    "@react-aria/interactions" "^3.2.0"
-    "@react-aria/utils" "^3.2.0"
-    "@react-spectrum/text" "^3.1.0"
-    "@react-spectrum/utils" "^3.2.0"
-    "@react-stately/toggle" "^3.2.0"
-    "@react-types/button" "^3.2.0"
-    "@react-types/shared" "^3.2.0"
-    "@spectrum-icons/ui" "^3.1.0"
-
-"@react-spectrum/checkbox@^3.0.0-rc.1":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-spectrum/checkbox/-/checkbox-3.2.0.tgz#26089bf41b4d8dd8d840e2988312da240c0d60c5"
-  integrity sha1-Jgib9BtNjdjYQOKYgxLaJAwNYMU=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/checkbox" "^3.2.0"
-    "@react-aria/focus" "^3.2.1"
-    "@react-aria/interactions" "^3.1.0"
-    "@react-spectrum/form" "3.2.0"
-    "@react-spectrum/label" "3.2.0"
-    "@react-spectrum/utils" "^3.2.1"
-    "@react-stately/checkbox" "^3.0.0"
-    "@react-stately/toggle" "^3.1.0"
-    "@react-types/checkbox" "^3.2.0"
-    "@react-types/shared" "^3.1.0"
-    "@spectrum-icons/ui" "^3.1.0"
-
-"@react-spectrum/form@3.2.0":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-spectrum/form/-/form-3.2.0.tgz#9bd047b220c7fd3375d7407077d76dbd80ccbe36"
-  integrity sha1-m9BHsiDH/TN110Bwd9dtvYDMvjY=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/utils" "^3.2.0"
-    "@react-spectrum/utils" "^3.2.0"
-    "@react-types/form" "^3.2.0"
-    "@react-types/shared" "^3.2.0"
-
-"@react-spectrum/icon@^3.1.0":
-  version "3.1.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-spectrum/icon/-/icon-3.1.0.tgz#cb5bf0049c30b26f8a9eb25f337f289b5d6360a3"
-  integrity sha1-y1vwBJwwsm+KnrJfM38om11jYKM=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/utils" "^3.1.0"
-    "@react-spectrum/utils" "^3.1.0"
-    "@react-types/shared" "^3.1.0"
-
-"@react-spectrum/label@3.2.0":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-spectrum/label/-/label-3.2.0.tgz#e654640e87e4df156241a3e2fc7446b08519eb27"
-  integrity sha1-5lRkDofk3xViQaPi/HRGsIUZ6yc=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/i18n" "^3.1.0"
-    "@react-aria/label" "^3.1.0"
-    "@react-aria/utils" "^3.2.0"
-    "@react-spectrum/utils" "^3.2.0"
-    "@react-types/label" "^3.2.0"
-    "@react-types/shared" "^3.2.0"
-    "@spectrum-icons/ui" "^3.1.0"
-
-"@react-spectrum/provider@^3.0.0-rc.1":
-  version "3.1.1"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-spectrum/provider/-/provider-3.1.1.tgz#c1f38e29b4bb91d6885d5f672d7f55c08d8b8eb0"
-  integrity sha1-wfOOKbS7kdaIXV9nLX9VwI2LjrA=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/i18n" "^3.1.0"
-    "@react-aria/overlays" "^3.2.0"
-    "@react-aria/utils" "^3.2.0"
-    "@react-spectrum/utils" "^3.2.0"
-    "@react-types/provider" "^3.1.0"
-    "@react-types/shared" "^3.2.0"
-    clsx "^1.1.1"
-
-"@react-spectrum/text@^3.1.0":
-  version "3.1.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-spectrum/text/-/text-3.1.0.tgz#9dc2834519ce618b7fc7b3370ac208f9e21ca748"
-  integrity sha1-ncKDRRnOYYt/x7M3CsII+eIcp0g=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/utils" "^3.1.0"
-    "@react-spectrum/utils" "^3.1.0"
-    "@react-types/shared" "^3.1.0"
-    "@react-types/text" "^3.1.0"
-
-"@react-spectrum/theme-default@^3.0.0-rc.1":
-  version "3.1.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-spectrum/theme-default/-/theme-default-3.1.0.tgz#7e7c75484a3f6f60caad0e1e98ddb0d6a8ebfeeb"
-  integrity sha1-fnx1SEo/b2DKrQ4emN2w1qjr/us=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-types/provider" "^3.1.0"
-
-"@react-spectrum/utils@^3.1.0", "@react-spectrum/utils@^3.2.0", "@react-spectrum/utils@^3.2.1":
-  version "3.2.1"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-spectrum/utils/-/utils-3.2.1.tgz#e58cbb2814d06266315d8e35b689f96c6355ede9"
-  integrity sha1-5Yy7KBTQYmYxXY41ton5bGNV7ek=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/i18n" "^3.1.1"
-    "@react-aria/ssr" "^3.0.0"
-    "@react-aria/utils" "^3.2.1"
-    "@react-types/shared" "^3.2.0"
-    clsx "^1.1.1"
-
-"@react-stately/checkbox@^3.0.0":
-  version "3.0.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-stately/checkbox/-/checkbox-3.0.0.tgz#80609889bf3c7bd2c1221a9fee6400f34fa76e4f"
-  integrity sha1-gGCYib88e9LBIhqf7mQA80+nbk8=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-stately/toggle" "^3.1.0"
-    "@react-stately/utils" "^3.1.0"
-    "@react-types/checkbox" "^3.2.0"
-
-"@react-stately/overlays@^3.1.0":
-  version "3.1.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-stately/overlays/-/overlays-3.1.0.tgz#ce5d4f8bbbc44bb46c8f5545272dc9107687660e"
-  integrity sha1-zl1Pi7vES7Rsj1VFJy3JEHaHZg4=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-stately/utils" "^3.1.0"
-    "@react-types/overlays" "^3.1.0"
-
-"@react-stately/toggle@^3.1.0", "@react-stately/toggle@^3.2.0":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-stately/toggle/-/toggle-3.2.0.tgz#35a9edcd1c47bfb9d2744d9fb08cfd6d7cb14b9b"
-  integrity sha1-NantzRxHv7nSdE2fsIz9bXyxS5s=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-stately/utils" "^3.1.0"
-    "@react-types/checkbox" "^3.1.0"
-    "@react-types/shared" "^3.2.0"
-
-"@react-stately/utils@^3.1.0":
-  version "3.1.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-stately/utils/-/utils-3.1.0.tgz#16cade0ec299241e261f6b9cca81a15e2eada23c"
-  integrity sha1-FsreDsKZJB4mH2ucyoGhXi6tojw=
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-
-"@react-types/button@^3.2.0":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-types/button/-/button-3.2.0.tgz#797d9fd00b4b3d8066d38833b80cce2298e554c3"
-  integrity sha1-eX2f0AtLPYBm04gzuAzOIpjlVMM=
-  dependencies:
-    "@react-types/shared" "^3.2.0"
-
-"@react-types/checkbox@^3.1.0", "@react-types/checkbox@^3.2.0":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-types/checkbox/-/checkbox-3.2.0.tgz#a77dd9378449760494ce7cf56492aa61b6357bc3"
-  integrity sha1-p33ZN4RJdgSUznz1ZJKqYbY1e8M=
-  dependencies:
-    "@react-types/shared" "^3.1.0"
-
-"@react-types/form@^3.2.0":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-types/form/-/form-3.2.0.tgz#485d569da30f74b3ac7d3dcf68a9913817872a16"
-  integrity sha1-SF1WnaMPdLOsfT3PaKmROBeHKhY=
-  dependencies:
-    "@react-types/shared" "^3.2.0"
-
-"@react-types/label@^3.1.0", "@react-types/label@^3.2.0":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-types/label/-/label-3.2.0.tgz#b0829792b8d74aa3d5b2bc21ae68c53e4e1f1728"
-  integrity sha1-sIKXkrjXSqPVsrwhrmjFPk4fFyg=
-  dependencies:
-    "@react-types/shared" "^3.2.0"
-
-"@react-types/overlays@^3.1.0", "@react-types/overlays@^3.2.0":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-types/overlays/-/overlays-3.2.0.tgz#07e4810fef65b5ba9dc85f4ab51056743dca9758"
-  integrity sha1-B+SBD+9ltbqdyF9KtRBWdD3Kl1g=
-  dependencies:
-    "@react-types/shared" "^3.2.0"
-
-"@react-types/provider@^3.1.0":
-  version "3.1.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-types/provider/-/provider-3.1.0.tgz#4920e1880e48848f5b76a7192862449a6485f954"
-  integrity sha1-SSDhiA5IhI9bdqcZKGJEmmSF+VQ=
-  dependencies:
-    "@react-types/shared" "^3.1.0"
-
-"@react-types/shared@^3.1.0", "@react-types/shared@^3.2.0":
-  version "3.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-types/shared/-/shared-3.2.0.tgz#531c320e6b8f01f614336c14cee50ecf9fca4a4d"
-  integrity sha1-UxwyDmuPAfYUM2wUzuUOz5/KSk0=
-
-"@react-types/switch@^3.1.0":
-  version "3.1.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-types/switch/-/switch-3.1.0.tgz#a286251e9455364e622a480c3be176e49b1affed"
-  integrity sha1-ooYlHpRVNk5iKkgMO+F25Jsa/+0=
-  dependencies:
-    "@react-types/checkbox" "^3.1.0"
-    "@react-types/shared" "^3.1.0"
-
-"@react-types/text@^3.1.0":
-  version "3.1.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@react-types/text/-/text-3.1.0.tgz#b8a0db19ab61e7b52df48fa3b8df6dce3b75932b"
-  integrity sha1-uKDbGath57Ut9I+juN9tzjt1kys=
-  dependencies:
-    "@react-types/shared" "^3.1.0"
-
-"@spectrum-icons/ui@^3.1.0":
-  version "3.1.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/@spectrum-icons/ui/-/ui-3.1.0.tgz#15ceb8a98f78f26c10a1045f60a60582f45ae846"
-  integrity sha1-Fc64qY948mwQoQRfYKYFgvRa6EY=
-  dependencies:
-    "@adobe/react-spectrum-ui" "^1.0.0"
-    "@react-spectrum/icon" "^3.1.0"
 
 "@types/jsdom@^12.2.4":
   version "12.2.4"
@@ -2014,11 +1661,6 @@ clone@^2.1.1:
   resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/clone/-/clone-2.1.2.tgz#1b7f4b9f591f1e8f83670401600345a02887435f"
   integrity sha1-G39Ln1kfHo+DZwQBYANFoCiHQ18=
 
-clsx@^1.1.1:
-  version "1.1.1"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/clsx/-/clsx-1.1.1.tgz#98b3134f9abbdf23b2663491ace13c5c03a73188"
-  integrity sha1-mLMTT5q73yOyZjSRrOE8XAOnMYg=
-
 coa@^2.0.2:
   version "2.0.2"
   resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/coa/-/coa-2.0.2.tgz#43f6c21151b4ef2bf57187db0d73de229e3e7ec3"
@@ -2576,13 +2218,6 @@ dom-converter@^0.2:
   integrity sha1-ZyGp2u4uKTaClVtq/kFncWJ7t2g=
   dependencies:
     utila "~0.4"
-
-dom-helpers@^3.3.1:
-  version "3.4.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/dom-helpers/-/dom-helpers-3.4.0.tgz#e9b369700f959f62ecde5a6babde4bccd9169af8"
-  integrity sha1-6bNpcA+Vn2Ls3lprq95LzNkWmvg=
-  dependencies:
-    "@babel/runtime" "^7.1.2"
 
 dom-serializer@0:
   version "0.2.2"
@@ -3427,18 +3062,6 @@ inherits@2.0.3:
   version "2.0.3"
   resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/inherits/-/inherits-2.0.3.tgz#633c2c83e3da42a502f52466022480f4208261de"
   integrity sha1-Yzwsg+PaQqUC9SRmAiSA9CCCYd4=
-
-intl-messageformat-parser@1.4.0:
-  version "1.4.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/intl-messageformat-parser/-/intl-messageformat-parser-1.4.0.tgz#b43d45a97468cadbe44331d74bb1e8dea44fc075"
-  integrity sha1-tD1FqXRoytvkQzHXS7Ho3qRPwHU=
-
-intl-messageformat@^2.2.0:
-  version "2.2.0"
-  resolved "https://artifactory.corp.adobe.com:443/artifactory/api/npm/npmjs/intl-messageformat/-/intl-messageformat-2.2.0.tgz#345bcd46de630b7683330c2e52177ff5eab484fc"
-  integrity sha1-NFvNRt5jC3aDMwwuUhd/9eq0hPw=
-  dependencies:
-    intl-messageformat-parser "1.4.0"
 
 invariant@^2.2.2, invariant@^2.2.4:
   version "2.2.4"

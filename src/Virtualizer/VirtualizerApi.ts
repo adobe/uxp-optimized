@@ -8,6 +8,11 @@ export type VirtualizerInputHandles = {
      * @param options.position relative position to show item at: 0 = top of window, 1 = bottom of window.
      */
     scrollToItem(key: string, options?: { position?: number }): void
+    /**
+     * Scrolls by a relative amount in the x and/or y directions.
+     * @param x pixels to scroll in the horizontal direction or 0 | null | undefined to not scroll horizontally.
+     * @param y pixels to scroll in the vertical direction or 0 | null | undefined to not scroll vertically.
+     */
     scrollBy(x: number, y: number): void
 }
 
@@ -46,12 +51,17 @@ export type VirtualizerProperties<T = any> = {
     /**
      * The key of an item that should be scrolled into view.
      * Alternatively you can use a 'ref' and call 'scrollToItem(key: string)'.
+     * @deprecated this is only provided for backwards compatibility. Use a ref and @see scrollToItem instead.
      */
     scrollToItem?: string;
     /**
      * Number between 0 and 1 where 0 means top of the visible window and 1 means the bottom.
      */
     scrollToPosition?: number;
+    /**
+     * Cache react elements based on key? Defaults to true.
+     */
+    cacheElements?: boolean;
     id?: string;
     className?: string;
     style?: CSSProperties;

@@ -44,15 +44,10 @@
     "parcel-bundler": "^1.12.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "typescript": "^4.0.2"
-  },
-  "dependencies": {
-    "@adobe/spectrum-css": "^2.18.0",
-    "@react-spectrum/button": "^3.0.0-rc.1",
-    "@react-spectrum/checkbox": "^3.0.0-rc.1",
-    "@react-spectrum/provider": "^3.0.0-rc.1",
-    "@react-spectrum/theme-default": "^3.0.0-rc.1",
+    "typescript": "^4.0.2",
     "sass-loader": "^8.0.2",
     "source-map-loader": "^0.2.4"
+  },
+  "dependencies": {
   }
 }
