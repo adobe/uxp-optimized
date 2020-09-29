@@ -178,16 +178,16 @@ describe('Container', function() {
             container.scrollTo = (options?) => container.scrollTop = options.top;
 
             scrollerAPI.scrollBy(0, 100);
-            assert(container.scrollTop === 100);
+            assert(container.scrollTop === 100 as any);
 
             scrollerAPI.scrollBy(0, -50);
-            assert(container.scrollTop === 50);
+            assert(container.scrollTop === 50 as any);
 
             scrollerAPI.scrollBy(0, -100);
-            assert(container.scrollTop === 0);
+            assert(container.scrollTop === 0 as any);
 
             scrollerAPI.scrollBy(0, 1000);
-            assert(container.scrollTop === 600); // Max is scrollHeight - clientHeight
+            assert(container.scrollTop === 600 as any); // Max is scrollHeight - clientHeight
         });
     });
 
