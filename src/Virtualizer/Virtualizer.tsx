@@ -42,7 +42,7 @@ function createPropertyGetter<T,V>(
 }
 
 export default forwardRef(function Virtualizer<T>(properties: VirtualizerProperties<T>, ref: Ref<VirtualizerInputHandles>) {
-    let { items, itemKey, itemType, itemRect, scrollToItem, style, children: factory, ...otherProps } = properties;
+    let { items, itemKey, itemType, itemRect, scrollToItem, cacheElements = true, style, children: factory, ...otherProps } = properties;
     const itemKeyFunction = useMemo(() => memoize(createPropertyGetter(itemKey, () => {
         //  if user provides no key property/function
         //  then we use the item index as key
@@ -122,7 +122,9 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
                     itemKeyFunction,
                     itemTypeFunction,
                     factory,
-                    cache.current
+                    //  if we aren't caching elements then we return a new cache object each time
+                    //  which effectively disables caching
+                    cacheElements ? cache.current : {}
                 )
             }
         </div>
