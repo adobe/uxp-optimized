@@ -74,7 +74,7 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
             container.scrollTo({ top: scrollTop });
         }
     }
-    function scrollToItemFunction(key: string, options: ScrollToOptions) {
+    function scrollToItemFunction(key: string, options?: ScrollToOptions) {
         let container = cache.current!.container
         if (container) {
             let manager = VirtualManager.instance(container);
