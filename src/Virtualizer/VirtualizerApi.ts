@@ -1,13 +1,16 @@
 import { ReactElement, CSSProperties } from 'react';
 
+export type ScrollToOptions = { position?: number, behavior?: "smooth" | "auto" }
+
 export type VirtualizerInputHandles = {
     /**
      * Scrolls an item into view.
      * This is animated for manual layouts and instant for flow layouts.
      * @param key the key for the item to scroll into view.
      * @param options.position relative position to show item at: 0 = top of window, 1 = bottom of window.
+     * @param options.behavior "smooth" for animated or "auto" for jump. Defaults to "smooth" for manual layout and "auto" for flexible layouts.
      */
-    scrollToItem(key: string, options?: { position?: number }): void
+    scrollToItem(key: string, options?: ScrollToOptions): void
     /**
      * Scrolls by a relative amount in the x and/or y directions.
      * @param x pixels to scroll in the horizontal direction or 0 | null | undefined to not scroll horizontally.
@@ -54,10 +57,10 @@ export type VirtualizerProperties<T = any> = {
      * @deprecated this is only provided for backwards compatibility. Use a ref and @see scrollToItem instead.
      */
     scrollToItem?: string;
-    /**
-     * Number between 0 and 1 where 0 means top of the visible window and 1 means the bottom.
-     */
-    scrollToPosition?: number;
+    // /**
+    //  * Number between 0 and 1 where 0 means top of the visible window and 1 means the bottom.
+    //  */
+    // scrollToPosition?: number;
     /**
      * Cache react elements based on key? Defaults to true.
      */

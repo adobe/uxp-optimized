@@ -12,7 +12,7 @@ import React, { useState, useRef, useMemo, forwardRef, useImperativeHandle, RefF
 import VirtualManager, { ItemProperty } from './VirtualManager';
 import memoize from '../common/memoize';
 import '../common/shims';
-import { VirtualizerInputHandles, VirtualizerProperties } from './VirtualizerApi';
+import { ScrollToOptions, VirtualizerInputHandles, VirtualizerProperties } from './VirtualizerApi';
 
 function createPropertyGetter<T,V>(property: keyof T | ItemProperty<T,V> | undefined):  ItemProperty<T,V> | undefined
 function createPropertyGetter<T,V>(property: keyof T | ItemProperty<T,V> | undefined, defaultValue: () => ItemProperty<T,V>, validator?: (value: V, item: T) => void):  ItemProperty<T,V>
@@ -74,11 +74,11 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
             container.scrollTo({ top: scrollTop });
         }
     }
-    function scrollToItemFunction(key: string) {
+    function scrollToItemFunction(key: string, options: ScrollToOptions) {
         let container = cache.current!.container
         if (container) {
             let manager = VirtualManager.instance(container);
-            manager?.scrollToItem(key, { position: properties?.scrollToPosition });
+            manager?.scrollToItem(key, options);
         }
     }
     useImperativeHandle(ref, () => ({

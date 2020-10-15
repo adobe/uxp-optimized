@@ -14,6 +14,8 @@ import Rect from "../common/Rect";
 import Margin from "../common/Margin";
 import getStableArray from "./getStableArray";
 import React, { ReactElement } from "react";
+import { ScrollToOptions } from "./VirtualizerApi";
+import { debounce } from "../common/utility";
 
 const initialVisibleItemCount = 30;
 
@@ -38,6 +40,7 @@ type ScrollAnchor = {
     itemKey: string,
     itemPin: number, // 0 = top, 0.5 = middle, 1 = bottom
     windowPin: number, // 0 = top, 0.5 = middle, 1 = bottom
+    behavior: "auto" | "smooth",
 }
 
 class ClassProperties {
@@ -308,6 +311,19 @@ export default class VirtualManager<T> {
 
     private correctForScrollAnchor() {
         if (this.scrollAnchor != null) {
+            if (this.scrollAnchor.behavior === "smooth") {
+                this.correctForScrollAnchorDebounced();
+            }
+            else {
+                //  debounce has a 50ms lag or so.
+                //  if we aren't smooth scrolling, we don't want the visual jank.
+                this.correctForScrollAnchorNow();
+            }
+        }
+    }
+
+    private correctForScrollAnchorNow() {
+        if (this.scrollAnchor != null) {
             let itemProps = this.itemProperties[this.scrollAnchor.itemKey];
             if (itemProps != null) {
                 let currentOffset = itemProps.y;
@@ -320,11 +336,14 @@ export default class VirtualManager<T> {
                     this.scrollAnchor = null;
                 }
                 else {
-                    this.container.scrollTop = this.container.scrollTop - correction;
+                    this.container.scrollTo({ top: this.container.scrollTop - correction, behavior: this.scrollAnchor.behavior })
+                    // this.container.scrollTop = this.container.scrollTop - correction;
                 }
             }
         }
     }
+
+    private correctForScrollAnchorDebounced = debounce(this.correctForScrollAnchorNow, 50);
 
     private getElementLookupByKey() {
         let elementLookup = new Map<string, HTMLElement>();
@@ -606,7 +625,7 @@ export default class VirtualManager<T> {
         this.updateAndLayout(true);
     }
 
-    scrollToItem(key: string, options?: { position?: number }) {
+    scrollToItem(key: string, options?: ScrollToOptions) {
         let { container } = this;
         let item = this.itemLookup.get(key);
         if (item) {
@@ -617,13 +636,14 @@ export default class VirtualManager<T> {
                 const manualLayout = this.isManualLayout;
                 const clientHeight = container.clientHeight;
                 const targetScrollTop = bounds.y - itemPin * bounds.height + windowPin * clientHeight;
+                const behavior = options?.behavior ?? (manualLayout ? "smooth" : "auto");
                 if (manualLayout) {
-                    container.scrollTo({ top: targetScrollTop, behavior: "smooth" });
+                    container.scrollTo({ top: targetScrollTop, behavior });
                 }
                 else {
                     // with custom layout we need to pin.
-                    this.scrollAnchor = { itemKey: key, itemPin, windowPin }
-                    container.scrollTo({ top: targetScrollTop });
+                    this.scrollAnchor = { itemKey: key, itemPin, windowPin, behavior }
+                    container.scrollTo({ top: targetScrollTop, behavior });
                 }
             }
         }
