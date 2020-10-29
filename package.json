@@ -7,7 +7,7 @@
     "virtualized",
     "uxp"
   ],
-  "version": "1.1.0",
+  "version": "1.1.1",
   "main": "index.js",
   "author": "Kris Nye <knye@adobe.com>",
   "license": "MIT",
@@ -48,6 +48,5 @@
     "sass-loader": "^8.0.2",
     "source-map-loader": "^0.2.4"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
