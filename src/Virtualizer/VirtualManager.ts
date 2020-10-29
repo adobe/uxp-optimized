@@ -88,6 +88,7 @@ class ItemProperties implements Rect {
     width: number = 0;
     height: number = 0;
     type: string;
+    rendered: boolean = false;
     constructor(type) {
         this.type = type;
     }
@@ -290,6 +291,8 @@ export default class VirtualManager<T> {
             properties.x = left;
             properties.y = top;
             if (element) {
+                // track that this element has actually been rendered
+                properties.rendered = true;
                 // now absolutely position if there is an element
                 const { style } = element;
                 if (style.position !== "absolute") {
@@ -307,6 +310,16 @@ export default class VirtualManager<T> {
 
         // increase the placeholders height to match our layed out height.
         this.placeholder.style.height = px(height);
+    }
+
+    //  TODO: I need to fix this to keep the scrolling smooth at all times
+    //  even when correcting target position. We can do that by handling the
+    //  animation ourselves instead of using container.scrollTo.
+    //  This will also let us capture and stop auto scrolling on user input.
+    //  (We will also want to fix that in UXP platform as well)
+    private isCurrentlyRendered(key: string) {
+        let itemProps = this.itemProperties[key];
+        return itemProps?.rendered && this.renderKeys.indexOf(key) >= 0;
     }
 
     private correctForScrollAnchor() {
@@ -343,7 +356,7 @@ export default class VirtualManager<T> {
         }
     }
 
-    private correctForScrollAnchorDebounced = debounce(this.correctForScrollAnchorNow, 50);
+    private correctForScrollAnchorDebounced = debounce(this.correctForScrollAnchorNow, 150);
 
     private getElementLookupByKey() {
         let elementLookup = new Map<string, HTMLElement>();
@@ -641,8 +654,12 @@ export default class VirtualManager<T> {
                     container.scrollTo({ top: targetScrollTop, behavior });
                 }
                 else {
-                    // with custom layout we need to pin.
-                    this.scrollAnchor = { itemKey: key, itemPin, windowPin, behavior }
+                    //  with custom layout we need to pin.
+                    if (!this.isCurrentlyRendered(key)) {
+                        //  if the item is currently rendered then we aren't guessing
+                        //  so we don't need to estimate or fix position after
+                        this.scrollAnchor = { itemKey: key, itemPin, windowPin, behavior }
+                    }
                     container.scrollTo({ top: targetScrollTop, behavior });
                 }
             }

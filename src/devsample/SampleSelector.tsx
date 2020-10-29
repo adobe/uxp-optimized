@@ -53,7 +53,7 @@ function SampleSelector(props) {
                 <option value="auto" key="auto">Scroll auto (immediate)</option>
             </select>
             {
-                [0, 20, 40, 60, 80].map(headerIndex => {
+                [0, 20, 40, 60, 80, 81, 82, 83, 84, 85].map(headerIndex => {
                     let key = String(- headerIndex - 1);
                     return <button key={key} onClick={() => {
                         sampleRef.current!.scrollToItem(key, { behavior: behavior as any });
