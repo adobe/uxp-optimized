@@ -25,6 +25,7 @@ function SampleSelector(props) {
 
     const [option, setOption] = useState(Object.keys(samples)[0]);
     const [duration, setDuration] = useState(0.5);
+    const [position, setPosition] = useState(0.0);
     const SampleLayout = samples[option].container;
     const sampleRef = useRef<VirtualizerInputHandles>();
 
@@ -45,7 +46,7 @@ function SampleSelector(props) {
                 }
             </select>
             <select
-                id="scrollBehavior"
+                id="duration"
                 style={{flex: 0}}
                 onChange={e => setDuration(parseFloat(e.target.value))}
             >
@@ -53,11 +54,20 @@ function SampleSelector(props) {
                 <option selected value="0.5" key="0.5">Scroll 0.5</option>
                 <option value="0" key="0">Scroll 0 (immediate)</option>
             </select>
+            <select
+                id="position"
+                style={{flex: 0}}
+                onChange={e => setPosition(parseFloat(e.target.value))}
+            >
+                <option selected value="0" key="0.0">Top (0.0)</option>
+                <option value="0.5" key="0.5">Middle (0.5)</option>
+                <option value="1.0" key="1.0">Bottom (1.0)</option>
+            </select>
             {
                 [0, 20, 40, 60, 80, 81, 82, 83, 84, 85].map(headerIndex => {
                     let key = String(- headerIndex - 1);
                     return <button key={key} onClick={() => {
-                        sampleRef.current!.scrollToItem(key, { duration });
+                        sampleRef.current!.scrollToItem(key, { duration, position });
                     }}>ScrollToCell Header {headerIndex}</button>
                 })
             }

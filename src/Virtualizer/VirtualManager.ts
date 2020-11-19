@@ -614,7 +614,7 @@ export default class VirtualManager<T> {
             const bounds = this.getItemRect(item);
             if (bounds) {
                 const clientHeight = this.container.clientHeight;
-                const targetScrollTop = bounds.y - itemPin * bounds.height + windowPin * clientHeight;
+                const targetScrollTop = bounds.y + itemPin * bounds.height - windowPin * clientHeight;
                 return targetScrollTop;
             }
         }
