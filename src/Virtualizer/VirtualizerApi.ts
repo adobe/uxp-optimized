@@ -1,6 +1,6 @@
 import { ReactElement, CSSProperties } from 'react';
 
-export type ScrollToOptions = { position?: number, behavior?: "smooth" | "auto" }
+export type ScrollToOptions = { position?: number, duration?: number }
 
 export type VirtualizerInputHandles = {
     /**

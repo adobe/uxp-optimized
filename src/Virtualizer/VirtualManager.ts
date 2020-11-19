@@ -16,6 +16,7 @@ import getStableArray from "./getStableArray";
 import React, { ReactElement } from "react";
 import { ScrollToOptions } from "./VirtualizerApi";
 import { debounce } from "../common/utility";
+import { isUXP } from "..";
 
 const initialVisibleItemCount = 30;
 
@@ -40,7 +41,7 @@ type ScrollAnchor = {
     itemKey: string,
     itemPin: number, // 0 = top, 0.5 = middle, 1 = bottom
     windowPin: number, // 0 = top, 0.5 = middle, 1 = bottom
-    behavior: "auto" | "smooth",
+    duration: number, // 0 = immediate, otherwise duration in seconds, default = 0.5
 }
 
 class ClassProperties {
@@ -147,6 +148,9 @@ export default class VirtualManager<T> {
         this.container.addEventListener("scroll", (e) => {
             this.updateAndLayout();
         });
+        this.container.addEventListener("wheel", (e) => {
+            this.cancelScrollAnimation();
+        })
         this.placeholder = document.createElement("div");
         this.container.appendChild(this.placeholder);
         this.update(props);
@@ -306,57 +310,21 @@ export default class VirtualManager<T> {
             }
         }
 
-        this.correctForScrollAnchor();
+        //  we do this immediately after a layout of children.
+        //  there is logic in the scrollAnimationCallback that can correct
+        //  for an updated measurement of children which could cause visual jump
+        //  calling this immediately fixes it immediately so there will be no visual jump
+        //  what can cause the jump is as follows:
+        //      We estimate a scroll location at 10,000px.
+        //      We scroll to that location.
+        //      Upon actual sizing of some *estimated* elements, it turns out we need to be at 10,050 px.
+        //      So we want to immediately correct the position rather than either
+        //      being 50 pixels off or waiting a full animation frame to correct it.
+        this.scrollAnimationCallback();
 
         // increase the placeholders height to match our layed out height.
         this.placeholder.style.height = px(height);
     }
-
-    //  TODO: I need to fix this to keep the scrolling smooth at all times
-    //  even when correcting target position. We can do that by handling the
-    //  animation ourselves instead of using container.scrollTo.
-    //  This will also let us capture and stop auto scrolling on user input.
-    //  (We will also want to fix that in UXP platform as well)
-    private isCurrentlyRendered(key: string) {
-        let itemProps = this.itemProperties[key];
-        return itemProps?.rendered && this.renderKeys.indexOf(key) >= 0;
-    }
-
-    private correctForScrollAnchor() {
-        if (this.scrollAnchor != null) {
-            if (this.scrollAnchor.behavior === "smooth") {
-                this.correctForScrollAnchorDebounced();
-            }
-            else {
-                //  debounce has a 50ms lag or so.
-                //  if we aren't smooth scrolling, we don't want the visual jank.
-                this.correctForScrollAnchorNow();
-            }
-        }
-    }
-
-    private correctForScrollAnchorNow() {
-        if (this.scrollAnchor != null) {
-            let itemProps = this.itemProperties[this.scrollAnchor.itemKey];
-            if (itemProps != null) {
-                let currentOffset = itemProps.y;
-                let targetOffset
-                    = this.container.scrollTop
-                    - itemProps.height * this.scrollAnchor.itemPin
-                    + this.container.clientHeight * this.scrollAnchor.windowPin;
-                let correction = targetOffset - currentOffset;
-                if (correction === 0) {
-                    this.scrollAnchor = null;
-                }
-                else {
-                    this.container.scrollTo({ top: this.container.scrollTop - correction, behavior: this.scrollAnchor.behavior })
-                    // this.container.scrollTop = this.container.scrollTop - correction;
-                }
-            }
-        }
-    }
-
-    private correctForScrollAnchorDebounced = debounce(this.correctForScrollAnchorNow, 150);
 
     private getElementLookupByKey() {
         let elementLookup = new Map<string, HTMLElement>();
@@ -638,31 +606,90 @@ export default class VirtualManager<T> {
         this.updateAndLayout(true);
     }
 
-    scrollToItem(key: string, options?: ScrollToOptions) {
-        let { container } = this;
-        let item = this.itemLookup.get(key);
+    getItemTargetScrollTop(anchor: ScrollAnchor) {
+        let item = this.itemLookup.get(anchor.itemKey);
         if (item) {
-            let itemPin = options?.position ?? 0;
-            let windowPin = options?.position ?? 0;
+            let itemPin = anchor.itemPin ?? 0;
+            let windowPin = anchor.windowPin ?? 0;
             const bounds = this.getItemRect(item);
             if (bounds) {
-                const manualLayout = this.isManualLayout;
-                const clientHeight = container.clientHeight;
+                const clientHeight = this.container.clientHeight;
                 const targetScrollTop = bounds.y - itemPin * bounds.height + windowPin * clientHeight;
-                const behavior = options?.behavior ?? (manualLayout ? "smooth" : "auto");
-                if (manualLayout) {
-                    container.scrollTo({ top: targetScrollTop, behavior });
-                }
-                else {
-                    //  with custom layout we need to pin.
-                    if (!this.isCurrentlyRendered(key)) {
-                        //  if the item is currently rendered then we aren't guessing
-                        //  so we don't need to estimate or fix position after
-                        this.scrollAnchor = { itemKey: key, itemPin, windowPin, behavior }
-                    }
-                    container.scrollTo({ top: targetScrollTop, behavior });
-                }
+                return targetScrollTop;
             }
+        }
+        return null;
+    }
+
+    scrollToItem(key: string, options?: ScrollToOptions) {
+        // correct for legacy .behavior option
+        if (options != null && (options as any).behavior != null && options.duration == null) {
+            options.duration = (options as any).behavior === "smooth" ? 0.5 : 0.0;
+        }
+        const itemPin = options?.position ?? 0;
+        const windowPin = options?.position ?? 0;
+        const duration = options?.duration ?? 0.5;
+        const scrollAnchor = { itemKey: key, itemPin, windowPin, duration };
+        const top = this.getItemTargetScrollTop(scrollAnchor);
+        if (top != null) {
+            this.startScrollAnimation(scrollAnchor);
+        }
+    }
+
+    private scrollAnimating?: number;
+    private scrollStartTime?: number;
+    private scrollStartPosition?: number;
+    private scrollDuration = 0.5;
+    private scrollWaitAfterFinish = 0.2;
+    private startScrollAnimation(scrollAnchor: ScrollAnchor) {
+        this.scrollAnchor = scrollAnchor;
+        this.scrollStartTime = Date.now();
+        this.scrollStartPosition = this.container.scrollTop;
+        this.scrollDuration = scrollAnchor.duration;
+        this.scrollAnimationCallback();
+    }
+
+    private cancelScrollAnimation() {
+        if (this.scrollAnimating != null) {
+            cancelAnimationFrame(this.scrollAnimating);
+            delete this.scrollAnimating;
+        }
+        this.scrollAnchor = null;
+    }
+
+    private scrollAnimationCallback() {
+        let continueAnimating = true;
+        delete this.scrollAnimating;
+        if (this.scrollAnchor != null) {
+            let targetTop = this.getItemTargetScrollTop(this.scrollAnchor);
+            if (targetTop != null) {
+                let startDelta = targetTop - this.scrollStartPosition!;
+                //  we are going to try to smooth scroll... BUT if we are scrolling a very long way
+                //  we are first going to jump much closer to the target location.
+                //  let's say, not more than 2000 pixels away, maximum.
+                const maxDelta = 2000;
+                if (Math.abs(startDelta) > maxDelta) {
+                    startDelta = Math.sign(startDelta) * maxDelta;
+                }
+                let time = (Date.now() - this.scrollStartTime!) / 1000;
+                let elapsed = Math.min(time, this.scrollDuration);
+                let alpha = this.scrollDuration > 0 ? elapsed / this.scrollDuration : 1.0;
+                let animatedTopNow = targetTop - (1 - alpha) * startDelta;
+                this.container.scrollTop = animatedTopNow;
+                //  keep animating for twice the scroll duration.
+                //  this provides extra time after scroll for resizing of
+                //  nearby element positions to get fixed to the anchor point.
+                continueAnimating = time < (this.scrollDuration + this.scrollWaitAfterFinish);
+                // console.log({ animatedTopNow, targetTop, alpha, elapsed, time, startDelta, startTop: this.scrollStartPosition, continueAnimating });
+            }
+        }
+        if (continueAnimating) {
+            if (this.scrollAnimating == null) {
+                this.scrollAnimating = requestAnimationFrame(this.scrollAnimationCallback.bind(this));
+            }
+        }
+        else {
+            this.cancelScrollAnimation();
         }
     }
 
