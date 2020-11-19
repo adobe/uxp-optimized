@@ -651,7 +651,9 @@ export default class VirtualManager<T> {
 
     private cancelScrollAnimation() {
         if (this.scrollAnimating != null) {
-            cancelAnimationFrame(this.scrollAnimating);
+            if (typeof cancelAnimationFrame === "function") {
+                cancelAnimationFrame(this.scrollAnimating);
+            }
             delete this.scrollAnimating;
         }
         this.scrollAnchor = null;
@@ -684,7 +686,7 @@ export default class VirtualManager<T> {
             }
         }
         if (continueAnimating) {
-            if (this.scrollAnimating == null) {
+            if (this.scrollAnimating == null && typeof requestAnimationFrame === "function") {
                 this.scrollAnimating = requestAnimationFrame(this.scrollAnimationCallback.bind(this));
             }
         }
