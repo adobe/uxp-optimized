@@ -208,7 +208,12 @@ export default class VirtualManager<T> {
         })
     }
 
-    getItemRect(item: T, key?: string): Rect | null {
+    getItemRect(item: T | null, key: string): Rect | null
+    getItemRect(item: T, key?: string): Rect | null
+    getItemRect(item: T | null, key?: string): Rect | null {
+        if (item == null && key != null) {
+            item = this.itemLookup.get(key) || null;
+        }
         if (item != null) {
             let rect = this.itemRect != null ? this.itemRect(item) : null;
             if (rect != null) {

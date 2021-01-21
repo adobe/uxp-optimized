@@ -1,4 +1,5 @@
 import { ReactElement, CSSProperties } from 'react';
+import Rect from '../common/Rect';
 
 export type ScrollToOptions = { position?: number, duration?: number }
 
@@ -17,6 +18,15 @@ export type VirtualizerInputHandles = {
      * @param y pixels to scroll in the vertical direction or 0 | null | undefined to not scroll vertically.
      */
     scrollBy(x: number, y: number): void
+    /**
+     * Returns the item keys for all currently rendered items. Some will be offscreen.
+     */
+    getRenderKeys(): Array<string>
+    /**
+     * Returns a rect of the items current bounds or null if the item is not found.
+     * @param key Item key
+     */
+    getItemRect(key: string): Rect | null
 }
 
 export type VirtualizerProperties<T = any> = {
