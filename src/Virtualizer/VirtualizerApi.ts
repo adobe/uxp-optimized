@@ -57,10 +57,10 @@ export type VirtualizerProperties<T = any> = {
      * @deprecated this is only provided for backwards compatibility. Use a ref and @see scrollToItem instead.
      */
     scrollToItem?: string;
-    // /**
-    //  * Number between 0 and 1 where 0 means top of the visible window and 1 means the bottom.
-    //  */
-    // scrollToPosition?: number;
+    /**
+     * The direction to scroll. Defaults to "vertical".
+     */
+    direction?: "vertical" | "horizontal";
     /**
      * Cache react elements based on key? Defaults to true.
      */

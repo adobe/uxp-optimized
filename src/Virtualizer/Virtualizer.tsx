@@ -43,6 +43,7 @@ function createPropertyGetter<T,V>(
 
 export default forwardRef(function Virtualizer<T>(properties: VirtualizerProperties<T>, ref: Ref<VirtualizerInputHandles>) {
     let { items, itemKey, itemType, itemRect, scrollToItem, cacheElements = true, style, children: factory, ...otherProps } = properties;
+    let horizontal = properties.direction === "horizontal";
     const itemKeyFunction = useMemo(() => memoize(createPropertyGetter(itemKey, () => {
         //  if user provides no key property/function
         //  then we use the item index as key
@@ -96,7 +97,11 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
             //  we are calling setContainer with the cached container
             //  we want the correct renderKeys BEFORE we hit this functions element declaration.
             renderKeys = VirtualManager.update({
-                container, items, renderKeys, setRenderKeys,
+                container,
+                horizontal,
+                items,
+                renderKeys,
+                setRenderKeys,
                 itemKey: itemKeyFunction,
                 itemType: itemTypeFunction,
                 itemRect: itemRectFunction,
@@ -112,7 +117,13 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
     if (cache.current.container) {
         setContainer(cache.current.container);
     }
-    style = Object.assign({ position: "relative", overflowX: "hidden", overflowY: "scroll", flex: "1 1 auto", zIndex: 0 }, style);
+    style = Object.assign({
+        position: "relative",
+        overflowX: horizontal ? "scroll" : "hidden",
+        overflowY: horizontal ? "hidden" : "scroll",
+        flex: "1 1 auto",
+        zIndex: 0
+    }, style);
     return (
         <div ref={setContainer as any} style={style} {...otherProps}>
             {

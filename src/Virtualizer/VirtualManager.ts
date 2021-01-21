@@ -15,8 +15,6 @@ import Margin from "../common/Margin";
 import getStableArray from "./getStableArray";
 import React, { ReactElement } from "react";
 import { ScrollToOptions } from "./VirtualizerApi";
-import { debounce } from "../common/utility";
-import { isUXP } from "..";
 
 const initialVisibleItemCount = 30;
 
@@ -24,6 +22,7 @@ export type ItemProperty<T,V> = (item: T) => V
 
 type ContainerProperties<T> = {
     container: HTMLDivElement
+    horizontal: boolean
     items: T[]
     itemKey: ItemProperty<T,string>
     itemType: ItemProperty<T,string>
@@ -120,6 +119,7 @@ export default class VirtualManager<T> {
 
     private resizeObserver: UxpResizeObserver
     private container: HTMLDivElement
+    private horizontal: boolean
     private items!: T[]
     private itemLookup: Map<string,T>
     private itemKey: ItemProperty<T,string>
@@ -138,6 +138,7 @@ export default class VirtualManager<T> {
         this.container = props.container;
         this.containerWidth = this.container.clientWidth;
         this.container[VirtualManager.symbol] = this;
+        this.horizontal = props.horizontal;
         this.itemLookup = new Map();
         this.itemKey = props.itemKey;
         this.itemType = props.itemType;
@@ -279,11 +280,14 @@ export default class VirtualManager<T> {
             let elementWidth = properties.width + margin.horizontal;
             let elementHeight = properties.height + margin.vertical;
             let left: number, top: number;
-            if (!inline || (x + elementWidth) > width) {
+            if (!this.horizontal && (!inline || (x + elementWidth) > width)) {
                 newLine();
             }
             left = x + this.containerPadding.left;
             top = y + this.containerPadding.top;
+            if (this.horizontal) {
+                width = Math.max(width, x + elementWidth);
+            }
             height = Math.max(height, y + elementHeight);
             if (inline) {
                 x += elementWidth;
@@ -323,7 +327,12 @@ export default class VirtualManager<T> {
         this.scrollAnimationCallback();
 
         // increase the placeholders height to match our layed out height.
-        this.placeholder.style.height = px(height);
+        if (this.horizontal) {
+            this.placeholder.style.width = px(width);
+        }
+        else {
+            this.placeholder.style.height = px(height);
+        }
     }
 
     private getElementLookupByKey() {
@@ -363,7 +372,7 @@ export default class VirtualManager<T> {
     }
 
     get pageSize() {
-        return this.container.clientHeight;
+        return this.container[this.horizontal ? "clientWidth" : "clientHeight"];
     }
 
     get prerenderOtherDirection() {
@@ -379,18 +388,19 @@ export default class VirtualManager<T> {
     }
 
     private getRenderItemIndices(scrollDirection: number) {
-        let top = Math.max(0, this.container.scrollTop);
+        let { horizontal } = this;
+        let beginning = Math.max(0, this.container[horizontal ? "scrollLeft" : "scrollTop"]);
         let { pageSize, prerenderScrollDirection, prerenderOtherDirection } = this;
         if (scrollDirection === 0) {
             // if we aren't scrolling then each direction is other.
             prerenderScrollDirection = prerenderOtherDirection;
         }
-        let bottom = top + pageSize;
-        let totalPagesHeight = pageSize + prerenderScrollDirection + prerenderOtherDirection;
+        let end = beginning + pageSize;
+        let totalPagesSize = pageSize + prerenderScrollDirection + prerenderOtherDirection;
         // now expand top
-        top = Math.max(0, top - (scrollDirection >= 0 ? prerenderOtherDirection : prerenderScrollDirection));
+        beginning = Math.max(0, beginning - (scrollDirection >= 0 ? prerenderOtherDirection : prerenderScrollDirection));
         // then expand bottom by whatever is remaining. (if this is larger than content area, that is fine)
-        bottom = top + totalPagesHeight;
+        end = beginning + totalPagesSize;
 
         const renderKeys = new Set<string>();
         const existingKeys = new Set<string>();
@@ -401,6 +411,9 @@ export default class VirtualManager<T> {
         const presize = !this.isManualLayout;
         const presizeTypes = presize ? new Map<string,string>() : null;
 
+        let size = horizontal ? "width": "height";
+        let position = horizontal ? "x" : "y";
+
         for (let index = 0; index < this.items.length; index++) {
             const item = this.items[index];
             const key = this.itemKey(item);
@@ -408,7 +421,7 @@ export default class VirtualManager<T> {
             existingKeys.add(key);
 
             const rect = this.getItemRect(item, key);
-            if (rect && ((rect.y + rect.height) > top) && (rect.y <= bottom)) {
+            if (rect && ((rect[position] + rect[size]) > beginning) && (rect[position] <= end)) {
                 renderKeys.add(key);
             }
             else if (presizeTypes != null) {
@@ -589,7 +602,8 @@ export default class VirtualManager<T> {
                     classProps.invalidate();
                 }
                 // also reset placeholder size
-                this.placeholder.style.height = "0px";
+                this.placeholder.style.width = "1px";
+                this.placeholder.style.height = "1px";
                 // TODO: Find currently visible items and use ScrollAnchor to restore them to same position after relayout.
                 // also, clear all cached item sizes.
                 for (let key in this.itemProperties) {

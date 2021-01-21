@@ -13,12 +13,14 @@ import ReactDOM from "react-dom";
 import CssLayout from "./ProgressiveCss/CssLayout";
 import ManualLayout from "./ManualLayout/ManualLayout";
 import FlowLayout from "./FlowLayout";
+import Horizontal from "./Horizontal";
 import { VirtualizerInputHandles, VirtualizerProperties } from "../Virtualizer"
 
 const samples = {
     flow: { name: "Flow Layout", container: FlowLayout },
     css: { name: "Progressive Css Layout", container: CssLayout },
     manual: { name: "Manual Layout", container: ManualLayout },
+    horizontal: { name: "Horizontal", container: Horizontal },
 }
 
 function SampleSelector(props) {

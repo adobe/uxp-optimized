@@ -1,0 +1,8 @@
+.Horizontal_Icon {
+    /* use presence of display: inline to indicate grid layout */
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    margin: 8px;
+    box-sizing: border-box;
+}
