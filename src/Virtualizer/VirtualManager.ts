@@ -620,16 +620,19 @@ export default class VirtualManager<T> {
         this.updateAndLayout(true);
     }
 
-    getItemTargetScrollTop(anchor: ScrollAnchor) {
+    getItemTargetScrollPosition(anchor: ScrollAnchor) {
         let item = this.itemLookup.get(anchor.itemKey);
         if (item) {
             let itemPin = anchor.itemPin ?? 0;
             let windowPin = anchor.windowPin ?? 0;
             const bounds = this.getItemRect(item);
             if (bounds) {
-                const clientHeight = this.container.clientHeight;
-                const targetScrollTop = bounds.y + itemPin * bounds.height - windowPin * clientHeight;
-                return targetScrollTop;
+                const clientSize = this.container[this.horizontal ? "clientWidth" : "clientHeight"];
+                const targetScrollPosition =
+                    bounds[this.horizontal ? "x" : "y"] +
+                    itemPin * bounds[this.horizontal ? "width" : "horizontal"]
+                    - windowPin * clientSize;
+                return targetScrollPosition;
             }
         }
         return null;
@@ -644,7 +647,7 @@ export default class VirtualManager<T> {
         const windowPin = options?.position ?? 0;
         const duration = options?.duration ?? 0.5;
         const scrollAnchor = { itemKey: key, itemPin, windowPin, duration };
-        const top = this.getItemTargetScrollTop(scrollAnchor);
+        const top = this.getItemTargetScrollPosition(scrollAnchor);
         if (top != null) {
             this.startScrollAnimation(scrollAnchor);
         }
@@ -658,7 +661,7 @@ export default class VirtualManager<T> {
     private startScrollAnimation(scrollAnchor: ScrollAnchor) {
         this.scrollAnchor = scrollAnchor;
         this.scrollStartTime = Date.now();
-        this.scrollStartPosition = this.container.scrollTop;
+        this.scrollStartPosition = this.container[this.horizontal ? "scrollLeft" : "scrollTop"];
         this.scrollDuration = scrollAnchor.duration;
         this.scrollAnimationCallback();
     }
@@ -677,9 +680,9 @@ export default class VirtualManager<T> {
         let continueAnimating = true;
         delete this.scrollAnimating;
         if (this.scrollAnchor != null) {
-            let targetTop = this.getItemTargetScrollTop(this.scrollAnchor);
-            if (targetTop != null) {
-                let startDelta = targetTop - this.scrollStartPosition!;
+            let targetPosition = this.getItemTargetScrollPosition(this.scrollAnchor);
+            if (targetPosition != null) {
+                let startDelta = targetPosition - this.scrollStartPosition!;
                 //  we are going to try to smooth scroll... BUT if we are scrolling a very long way
                 //  we are first going to jump much closer to the target location.
                 //  let's say, not more than 2000 pixels away, maximum.
@@ -690,8 +693,8 @@ export default class VirtualManager<T> {
                 let time = (Date.now() - this.scrollStartTime!) / 1000;
                 let elapsed = Math.min(time, this.scrollDuration);
                 let alpha = this.scrollDuration > 0 ? elapsed / this.scrollDuration : 1.0;
-                let animatedTopNow = targetTop - (1 - alpha) * startDelta;
-                this.container.scrollTop = animatedTopNow;
+                let animatedTopNow = targetPosition - (1 - alpha) * startDelta;
+                this.container[this.horizontal ? "scrollLeft" : "scrollTop"] = animatedTopNow;
                 //  keep animating for twice the scroll duration.
                 //  this provides extra time after scroll for resizing of
                 //  nearby element positions to get fixed to the anchor point.

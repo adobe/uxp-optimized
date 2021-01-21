@@ -17,10 +17,10 @@ import Horizontal from "./Horizontal";
 import { VirtualizerInputHandles, VirtualizerProperties } from "../Virtualizer"
 
 const samples = {
+    horizontal: { name: "Horizontal", container: Horizontal },
     flow: { name: "Flow Layout", container: FlowLayout },
     css: { name: "Progressive Css Layout", container: CssLayout },
     manual: { name: "Manual Layout", container: ManualLayout },
-    horizontal: { name: "Horizontal", container: Horizontal },
 }
 
 function SampleSelector(props) {
