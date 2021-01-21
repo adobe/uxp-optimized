@@ -27,6 +27,10 @@ export type VirtualizerInputHandles = {
      * @param key Item key
      */
     getItemRect(key: string): Rect | null
+    /**
+     * Returns the containers currently visible rect.
+     */
+    getVisibleRect(): Rect
 }
 
 export type VirtualizerProperties<T = any> = {

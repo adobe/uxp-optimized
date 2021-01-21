@@ -376,6 +376,14 @@ export default class VirtualManager<T> {
         }
     }
 
+    getVisibleRect(): Rect {
+        let x = this.container.scrollLeft;
+        let y = this.container.scrollTop;
+        let width = this.container.clientWidth;
+        let height = this.container.clientHeight;
+        return { x, y, width, height };
+    }
+
     get pageSize() {
         return this.container[this.horizontal ? "clientWidth" : "clientHeight"];
     }

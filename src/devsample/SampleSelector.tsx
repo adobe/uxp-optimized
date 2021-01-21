@@ -68,8 +68,10 @@ function SampleSelector(props) {
             <button onClick={() => {
                 let virtualizer = sampleRef.current!
                 let keys = virtualizer.getRenderKeys();
+                let bounds = virtualizer.getVisibleRect();
                 console.log(keys);
                 console.log(keys.map(key => virtualizer.getItemRect(key)));
+                console.log({ bounds });
             }}>Get Render Items and Bounds</button>
             {
                 [0, 20, 40, 60, 80, 81, 82, 83, 84, 85].map(headerIndex => {

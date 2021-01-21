@@ -82,30 +82,35 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
             manager?.scrollToItem(key, options);
         }
     }
+    function getManager() {
+        let container = cache.current?.container
+        return container ? VirtualManager.instance(container) : null;
+    }
     function getRenderKeys() {
         return renderKeys;
     }
     function getItemRect(key: string) {
-        let container = cache.current!.container
-        if (container) {
-            let manager = VirtualManager.instance(container);
-            if (manager) {
-                let rect = manager.getItemRect(null, key)
-                if (rect) {
-                    //  we remove just the properties we want since the manager stores extra information
-                    //  on the rect structure.
-                    let { x, y, width, height } = rect;
-                    return { x, y, width, height };
-                }
+        let manager = getManager();
+        if (manager) {
+            let rect = manager.getItemRect(null, key)
+            if (rect) {
+                //  we remove just the properties we want since the manager stores extra information
+                //  on the rect structure.
+                let { x, y, width, height } = rect;
+                return { x, y, width, height };
             }
         }
         return { x: 0, y: 0, width: 0, height: 0 };
+    }
+    function getVisibleRect() {
+        return getManager()?.getVisibleRect() || { x: 0, y: 0, width: 0, height: 0 }
     }
     useImperativeHandle(ref, () => ({
         scrollToItem: scrollToItemFunction,
         scrollBy: scrollByFunction,
         getRenderKeys,
         getItemRect,
+        getVisibleRect,
     }));
     function setContainer(container) {
         if (container) {
