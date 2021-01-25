@@ -643,7 +643,7 @@ export default class VirtualManager<T> {
                 const clientSize = this.container[this.horizontal ? "clientWidth" : "clientHeight"];
                 const targetScrollPosition =
                     bounds[this.horizontal ? "x" : "y"] +
-                    itemPin * bounds[this.horizontal ? "width" : "horizontal"]
+                    itemPin * bounds[this.horizontal ? "width" : "height"]
                     - windowPin * clientSize;
                 return targetScrollPosition;
             }
