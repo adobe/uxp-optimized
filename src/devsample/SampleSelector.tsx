@@ -15,8 +15,10 @@ import ManualLayout from "./ManualLayout/ManualLayout";
 import FlowLayout from "./FlowLayout";
 import Horizontal from "./Horizontal";
 import { VirtualizerInputHandles, VirtualizerProperties } from "../Virtualizer"
+import UseSizeSample from "./UseSizeSample/UseSizeSample";
 
 const samples = {
+    useSize: { name: "useSize hook", container: UseSizeSample },
     horizontal: { name: "Horizontal", container: Horizontal },
     flow: { name: "Flow Layout", container: FlowLayout },
     css: { name: "Progressive Css Layout", container: CssLayout },
@@ -51,17 +53,19 @@ function SampleSelector(props) {
                 id="duration"
                 style={{flex: 0}}
                 onChange={e => setDuration(parseFloat(e.target.value))}
+                defaultValue="0.5"
             >
                 <option value="1.0" key="1.0">Scroll 1.0</option>
-                <option selected value="0.5" key="0.5">Scroll 0.5</option>
+                <option value="0.5" key="0.5">Scroll 0.5</option>
                 <option value="0" key="0">Scroll 0 (immediate)</option>
             </select>
             <select
                 id="position"
                 style={{flex: 0}}
                 onChange={e => setPosition(parseFloat(e.target.value))}
+                defaultValue="0.5"
             >
-                <option selected value="0" key="0.0">Top (0.0)</option>
+                <option value="0" key="0.0">Top (0.0)</option>
                 <option value="0.5" key="0.5">Middle (0.5)</option>
                 <option value="1.0" key="1.0">Bottom (1.0)</option>
             </select>

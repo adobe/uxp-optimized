@@ -51,6 +51,21 @@ A react virtualizer for efficiently rendering long lists of items. Similar to re
 
 [Progressive Css Layout Sample](./src/devsample/ProgressiveCss/CssLayout.tsx)
 
+### React Hooks
+
+#### useSize
+A hook which will call a function every time an elements size changes on UXP or web.
+
+    import { useSize } from "@adobe/uxp-optimized/react";
+
+    function Growable() {
+        let ref = useRef<HTMLDivElement>(null);
+        useSize(ref, (element) => {
+            console.log("Resized", element.clientWidth, element.clientHeight);
+        });
+        return <div ref={ref}></div>;
+    }
+
 ### Development
 
 #### Installation
