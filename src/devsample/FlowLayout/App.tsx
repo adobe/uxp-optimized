@@ -29,6 +29,9 @@ export default forwardRef(function App(props, ref) {
             className="Virtualizer"
             style={{ width: 500, height: 500 }}
             ref={ref}
+            onLayout={() => {
+                console.log("on layout");
+            }}
         >
             {
                 item => {

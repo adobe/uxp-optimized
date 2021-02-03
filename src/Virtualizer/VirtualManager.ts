@@ -29,6 +29,7 @@ type ContainerProperties<T> = {
     itemRect?: ItemProperty<T,Rect>
     renderKeys: string[]
     setRenderKeys(value: string[]): void
+    onLayout: () => void
 }
 
 /**
@@ -133,6 +134,7 @@ export default class VirtualManager<T> {
     private placeholder: HTMLDivElement
     private containerWidth: number;
     private scrollAnchor: ScrollAnchor | null = null;
+    private onLayout?: () => void
 
     constructor(props: ContainerProperties<T>) {
         this.container = props.container;
@@ -161,6 +163,7 @@ export default class VirtualManager<T> {
         this.items = props.items;
         this.renderKeys = props.renderKeys;
         this.setRenderKeys = props.setRenderKeys;
+        this.onLayout = props.onLayout;
 
         if (!this.isScrolling) {
             // we skip these time consuming steps if we are scrolling.
@@ -242,6 +245,10 @@ export default class VirtualManager<T> {
         this.ensureElementsObservedAndSized();
         if (needsLayout || forceLayout) {
             this.layoutChildren();
+            // fire layout event
+            if (this.onLayout) {
+                this.onLayout();
+            }
         }
         this.isScrolling = false;
     }
@@ -480,6 +487,7 @@ export default class VirtualManager<T> {
         return null;
     }
 
+    //  TODO: This needs to be fixed for horizontal mode. Somehow we missed this.
     private lastScrollTop: number = 0;
     private scrollDirection = 0; // 1 = down, -1 = up, 0 = none
     private previousItems?: T[]

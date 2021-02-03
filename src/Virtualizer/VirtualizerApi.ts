@@ -83,4 +83,9 @@ export type VirtualizerProperties<T = any> = {
     className?: string;
     style?: CSSProperties;
     ref?: any;
+    /**
+     * Event handler which will be called immediately after the virtualizer lays out children.
+     * This is called frequently while scrolling so don't perform expensive calculations within it.
+     */
+    onLayout?: () => void
 };
