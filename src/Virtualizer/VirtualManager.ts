@@ -29,7 +29,7 @@ type ContainerProperties<T> = {
     itemRect?: ItemProperty<T,Rect>
     renderKeys: string[]
     setRenderKeys(value: string[]): void
-    onLayout: () => void
+    onLayout?: () => void
 }
 
 /**
