@@ -111,7 +111,8 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
         getRenderKeys,
         getItemRect,
         getVisibleRect,
-    }));
+        container: cache.current!.container,
+    }), [cache.current.container]);
     function setContainer(container) {
         if (container) {
             if (ref) {
