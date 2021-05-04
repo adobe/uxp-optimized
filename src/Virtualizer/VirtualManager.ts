@@ -284,7 +284,7 @@ export default class VirtualManager<T> {
             let properties = this.getItemProperties(key, type);
             let classProps = this.classProperties.get(type);
             if (!classProps) {
-                console.warn("missing class properties: " + type);
+                // console.warn("missing class properties: " + type);
                 break;
             }
             let margin = classProps.cssMargin;
