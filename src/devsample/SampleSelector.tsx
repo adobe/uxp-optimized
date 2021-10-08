@@ -18,12 +18,12 @@ import { VirtualizerInputHandles, VirtualizerProperties } from "../Virtualizer"
 import UseSizeSample from "./UseSizeSample/UseSizeSample";
 
 const samples = {
-    useSize: { name: "useSize hook", container: UseSizeSample },
-    horizontal: { name: "Horizontal", container: Horizontal },
     flow: { name: "Flow Layout", container: FlowLayout },
+    horizontal: { name: "Horizontal", container: Horizontal },
+    useSize: { name: "useSize hook", container: UseSizeSample },
     css: { name: "Progressive Css Layout", container: CssLayout },
     manual: { name: "Manual Layout", container: ManualLayout },
-}
+};
 
 function SampleSelector(props) {
 

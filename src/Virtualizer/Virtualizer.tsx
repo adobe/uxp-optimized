@@ -8,7 +8,7 @@ it. If you have received this file from a source other than Adobe,
 then your use, modification, or distribution of it requires the prior
 written permission of Adobe.
 */
-import React, { useState, useRef, useMemo, forwardRef, useImperativeHandle, RefForwardingComponent, Ref, MutableRefObject } from 'react';
+import React, { useState, useRef, useMemo, forwardRef, useImperativeHandle, Ref, MutableRefObject, ForwardRefRenderFunction } from 'react';
 import VirtualManager, { ItemProperty } from './VirtualManager';
 import memoize from '../common/memoize';
 import '../common/shims';
@@ -115,9 +115,6 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
     }), [cache.current.container]);
     function setContainer(container) {
         if (container) {
-            if (ref) {
-                (ref as any).current = container;
-            }
             cache.current!.container = container;
             //  we also update the renderKeys immediately
             //  this matters for future renders where
@@ -168,4 +165,4 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
             }
         </div>
     );
-}) as RefForwardingComponent<VirtualizerInputHandles, VirtualizerProperties>;
+}) as ForwardRefRenderFunction<VirtualizerInputHandles, VirtualizerProperties>;
