@@ -42,7 +42,7 @@ function createPropertyGetter<T,V>(
 }
 
 export default forwardRef(function Virtualizer<T>(properties: VirtualizerProperties<T>, ref: Ref<VirtualizerInputHandles>) {
-    let { items, itemKey, itemType, itemRect, scrollToItem, onLayout, cacheElements = true, style, children: factory, ...otherProps } = properties;
+    let { items, itemKey, itemType, itemRect, scrollToItem, onLayout, cacheElements = true, style, children: factory, columnGap, rowGap, ...otherProps } = properties;
     let horizontal = properties.direction === "horizontal";
     const itemKeyFunction = useMemo(() => memoize(createPropertyGetter(itemKey, () => {
         //  if user provides no key property/function
@@ -129,6 +129,8 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
                 itemKey: itemKeyFunction,
                 itemType: itemTypeFunction,
                 itemRect: itemRectFunction,
+                columnGap,
+                rowGap,
                 onLayout,
             });
             //  if we have a scrollToItem then we scroll to it now.

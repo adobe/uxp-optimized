@@ -28,10 +28,12 @@ export default forwardRef(function App(props, ref) {
             itemType="type"
             className="Virtualizer"
             style={{ width: 500, height: 500 }}
+            columnGap={30}
+            rowGap={20}
             ref={ref}
-            onLayout={() => {
-                console.log("on layout");
-            }}
+            // onLayout={() => {
+            //     console.log("on layout");
+            // }}
         >
             {
                 item => {

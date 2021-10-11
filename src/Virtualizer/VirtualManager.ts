@@ -30,6 +30,8 @@ type ContainerProperties<T> = {
     renderKeys: string[]
     setRenderKeys(value: string[]): void
     onLayout?: () => void
+    rowGap?: number
+    columnGap?: number
 }
 
 /**
@@ -134,6 +136,8 @@ export default class VirtualManager<T> {
     private placeholder: HTMLDivElement
     private containerWidth: number;
     private scrollAnchor: ScrollAnchor | null = null;
+    private columnGap: number;
+    private rowGap: number;
     private onLayout?: () => void
 
     constructor(props: ContainerProperties<T>) {
@@ -145,6 +149,8 @@ export default class VirtualManager<T> {
         this.itemKey = props.itemKey;
         this.itemType = props.itemType;
         this.itemRect = props.itemRect;
+        this.columnGap = props.columnGap || 0;
+        this.rowGap = props.rowGap || 0;
         this.onresize = this.onresize.bind(this);
         this.resizeObserver = new ResizeObserver(this.onresize);
         this.updateAndLayout = this.updateAndLayout.bind(this);
@@ -255,11 +261,12 @@ export default class VirtualManager<T> {
 
     private layoutChildren() {
         // create quick element lookup by key.
+        let { columnGap, rowGap } = this;
         let elementLookup = this.getElementLookupByKey();
         let x = 0, y = 0, width = this.containerWidth - this.containerPadding.horizontal, height = 0;
         function newLine() {
             x = 0;
-            y = height;
+            y = height + rowGap;
         }
 
         // now iterate items
@@ -292,7 +299,7 @@ export default class VirtualManager<T> {
             let elementWidth = properties.width + margin.horizontal;
             let elementHeight = properties.height + margin.vertical;
             let left: number, top: number;
-            if (!this.horizontal && (!inline || (x + elementWidth) > width)) {
+            if (x > 0 && !this.horizontal && (!inline || (x + elementWidth) > width)) {
                 newLine();
             }
             left = x + this.containerPadding.left;
@@ -302,10 +309,10 @@ export default class VirtualManager<T> {
             }
             height = Math.max(height, y + elementHeight);
             if (inline) {
-                x += elementWidth;
+                x += elementWidth + columnGap;
             }
             else {
-                y += elementHeight;
+                y += elementHeight + rowGap;
             }
             // store on properties
             properties.x = left;

@@ -84,6 +84,12 @@ export type VirtualizerProperties<T = any> = {
     style?: CSSProperties;
     ref?: any;
     /**
+     * Horizontal and vertical interior gaps between items.
+     * @see https://www.w3.org/TR/css-align-3/#gaps
+     */
+    columnGap?: number;
+    rowGap?: number;
+    /**
      * Event handler which will be called immediately after the virtualizer lays out children.
      * This is called frequently while scrolling so don't perform expensive calculations within it.
      */
