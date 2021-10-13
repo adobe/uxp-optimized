@@ -15,6 +15,8 @@ import Margin from "../common/Margin";
 import getStableArray from "./getStableArray";
 import React, { ReactElement } from "react";
 import { ScrollToOptions } from "./VirtualizerApi";
+import { ColumnLayout } from ".";
+import lerp from "../common/lerp";
 
 const initialVisibleItemCount = 30;
 
@@ -32,6 +34,7 @@ type ContainerProperties<T> = {
     onLayout?: () => void
     rowGap?: number
     columnGap?: number
+    getColumnLayout?(itemType: string, containerWidth: number): ColumnLayout | undefined;
 }
 
 /**
@@ -57,6 +60,7 @@ class ClassProperties {
     //  components of their class present
     valid: boolean = false;
 
+    //  these fields are used to estimate the size of future elements of this class
     totalItemWidth = 0;
     totalItemHeight = 0;
     totalItemCount = 0;
@@ -138,7 +142,9 @@ export default class VirtualManager<T> {
     private scrollAnchor: ScrollAnchor | null = null;
     private columnGap: number;
     private rowGap: number;
+    private getColumnLayout?(itemType: string, containerWidth: number): ColumnLayout | undefined;
     private onLayout?: () => void
+    private itemTypeColumnLayoutCache = new Map<string,ColumnLayout|null>();
 
     constructor(props: ContainerProperties<T>) {
         this.container = props.container;
@@ -149,6 +155,7 @@ export default class VirtualManager<T> {
         this.itemKey = props.itemKey;
         this.itemType = props.itemType;
         this.itemRect = props.itemRect;
+        this.getColumnLayout = props.getColumnLayout;
         this.columnGap = props.columnGap || 0;
         this.rowGap = props.rowGap || 0;
         this.onresize = this.onresize.bind(this);
@@ -299,6 +306,24 @@ export default class VirtualManager<T> {
             let elementWidth = properties.width + margin.horizontal;
             let elementHeight = properties.height + margin.vertical;
             let left: number, top: number;
+            let columnLayout = this.getItemTypeColumnLayout(type, width);
+            if (columnLayout) {
+                let count = columnLayout.columns;
+                // so, use column logic to layout position and element size.
+                // let count = Math.max(1, Math.round(width / (column.width + this.columnGap)));
+                elementWidth = Math.floor((width - this.columnGap * (count - 1)) / count);
+                elementHeight = columnLayout.getItemHeight(elementWidth);
+                // determine the horizontal column index of the current element to render.
+                let index = Math.round(x / (elementWidth + this.columnGap));
+
+                // now we will tweak the x position to make sure we right align
+                // and distribute extra pixels fairly evenly across all columns
+                let l2r = index * (elementWidth + this.columnGap);
+                let r2l = width - (count - index) * (elementWidth + this.columnGap) + this.columnGap;
+                let alpha = count == 1 ? 0 : index / (count - 1);
+                x = Math.round(lerp(l2r, r2l, alpha));
+            }
+
             if (x > 0 && !this.horizontal && (!inline || (x + elementWidth) > width)) {
                 newLine();
             }
@@ -327,6 +352,10 @@ export default class VirtualManager<T> {
                 }
                 style.left = px(left);
                 style.top = px(top);
+                if (columnLayout != null) {
+                    style.width = px(elementWidth);
+                    style.height = px(elementHeight);
+                }
                 if (!inline) {
                     style.width = px(width - margin.horizontal);
                 }
@@ -620,6 +649,18 @@ export default class VirtualManager<T> {
         }
     }
 
+    private getItemTypeColumnLayout(itemType: string, containerWidth: number): ColumnLayout | null {
+        let value: ColumnLayout | null = null;
+        if (this.getColumnLayout != null) {
+            if (!this.itemTypeColumnLayoutCache.has(itemType)) {
+                this.itemTypeColumnLayoutCache.set(itemType, value = this.getColumnLayout(itemType, containerWidth) || null);
+            } else {
+                value = this.itemTypeColumnLayoutCache.get(itemType)!;
+            }
+        }
+        return value;
+    }
+
     private onresize(entries: ResizeObserverEntry[]) {
         //  if entries contains the container then we mark computed css obsolete
         //  that way we can recompute while traversing elements.
@@ -629,6 +670,7 @@ export default class VirtualManager<T> {
                 for (let classProps of this.classProperties.values()) {
                     classProps.invalidate();
                 }
+                this.itemTypeColumnLayoutCache.clear();
                 // also reset placeholder size
                 this.placeholder.style.width = "1px";
                 this.placeholder.style.height = "1px";

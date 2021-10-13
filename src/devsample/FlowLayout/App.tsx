@@ -1,7 +1,7 @@
 import "./App.css";
 import React, { useState, forwardRef } from "react";
 import Virtualizer from "../../Virtualizer";
-import defaultItems from "./items";
+import defaultItems, { iconType } from "./items";
 import * as components from "./components";
 
 export default forwardRef(function App(props, ref) {
@@ -17,6 +17,9 @@ export default forwardRef(function App(props, ref) {
         console.log("updateItem", item, props);
     }
 
+    let columnGap = 24;
+    let rowGap = 24;
+
     return <div className="App">
         <p>
         Virtualizer Sample.
@@ -27,9 +30,25 @@ export default forwardRef(function App(props, ref) {
             itemKey="key"
             itemType="type"
             className="Virtualizer"
-            style={{ width: 500, height: 500 }}
-            columnGap={30}
-            rowGap={20}
+            style={{ width: "100%", height: 500 }}
+            columnGap={columnGap}
+            rowGap={rowGap}
+            getColumnLayout={(itemType, containerWidth) => {
+                if (itemType === iconType) {
+                    let optimumWidth = 100;
+                    let minimumWidth = 80;
+                    let maximumWidth = 200;
+                    return {
+                        optimumWidth,
+                        minimumWidth,
+                        maximumWidth,
+                        columns: Math.round(containerWidth / (optimumWidth + columnGap)),
+                        getItemHeight(itemWidth) {
+                            return itemWidth;
+                        }
+                    };
+                }
+            }}
             ref={ref}
             // onLayout={() => {
             //     console.log("on layout");
