@@ -14,9 +14,9 @@ import memoize from '../common/memoize';
 import '../common/shims';
 import { ScrollToOptions, VirtualizerInputHandles, VirtualizerProperties } from './VirtualizerApi';
 
-function createPropertyGetter<T,V>(property: keyof T | ItemProperty<T,V> | undefined):  ItemProperty<T,V> | undefined
-function createPropertyGetter<T,V>(property: keyof T | ItemProperty<T,V> | undefined, defaultValue: () => ItemProperty<T,V>, validator?: (value: V, item: T) => void):  ItemProperty<T,V>
-function createPropertyGetter<T,V>(
+function createPropertyGetter<T extends object,V>(property: keyof T | ItemProperty<T,V> | undefined):  ItemProperty<T,V> | undefined
+function createPropertyGetter<T extends object,V>(property: keyof T | ItemProperty<T,V> | undefined, defaultValue: () => ItemProperty<T,V>, validator?: (value: V, item: T) => void):  ItemProperty<T,V>
+function createPropertyGetter<T extends object,V>(
     property: keyof T | ItemProperty<T,V> | undefined,
     defaultValue?: () => ItemProperty<T,V>,
     validator?: (value: V, item: T) => void
@@ -41,10 +41,10 @@ function createPropertyGetter<T,V>(
     throw new Error(`Unsupported property: ${property}`);
 }
 
-export default forwardRef(function Virtualizer<T>(properties: VirtualizerProperties<T>, ref: Ref<VirtualizerInputHandles>) {
-    let { items, itemKey, itemType, itemRect, scrollToItem, onLayout, cacheElements = true, style, children: factory, columnGap, rowGap, getColumnLayout, ...otherProps } = properties;
+export default forwardRef(function Virtualizer<T extends object>(properties: VirtualizerProperties<T>, ref: Ref<VirtualizerInputHandles>) {
+    let { items, itemKey, itemType, itemRect, scrollToItem, onLayout, cacheElements = true, style, children: factory, ...otherProps } = properties;
     let horizontal = properties.direction === "horizontal";
-    const itemKeyFunction = useMemo(() => memoize(createPropertyGetter(itemKey, () => {
+    const itemKeyFunction = useMemo(() => memoize(createPropertyGetter<T,string>(itemKey, () => {
         //  if user provides no key property/function
         //  then we use the item index as key
         const itemToIndex = new Map<T,string>(items.map((item, index) => [item, String(index)]));
@@ -129,9 +129,6 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
                 itemKey: itemKeyFunction,
                 itemType: itemTypeFunction,
                 itemRect: itemRectFunction,
-                getColumnLayout,
-                columnGap,
-                rowGap,
                 onLayout,
             });
             //  if we have a scrollToItem then we scroll to it now.

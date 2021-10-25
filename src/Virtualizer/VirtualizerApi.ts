@@ -33,17 +33,6 @@ export type VirtualizerInputHandles = {
     getVisibleRect(): Rect
 }
 
-/**
- * Used to specify dynamic column layouts that adapt item size and fit to width.
- */
-export type ColumnLayout = {
-    columns: number;
-    minimumWidth: number;
-    maximumWidth: number;
-    optimumWidth: number;
-    getItemHeight(itemWidth: number);
-}
-
 export type VirtualizerProperties<T = any> = {
     /**
      * Each item represents a potentially visible child element.
@@ -94,19 +83,6 @@ export type VirtualizerProperties<T = any> = {
     className?: string;
     style?: CSSProperties;
     ref?: any;
-    /**
-     * Horizontal and vertical interior gaps between items.
-     * @see https://www.w3.org/TR/css-align-3/#gaps
-     */
-    columnGap?: number;
-    rowGap?: number;
-    /**
-     * Optionally returns dynamic column layout configuration for an item type.
-     * This only works when using built in flow layout.
-     * @param itemType The type of items to use this column layout with.
-     * @param containerWidth The current width of the container excluding padding.
-     */
-    getColumnLayout?(itemType: string, containerWidth: number): ColumnLayout | undefined;
     /**
      * Event handler which will be called immediately after the virtualizer lays out children.
      * This is called frequently while scrolling so don't perform expensive calculations within it.

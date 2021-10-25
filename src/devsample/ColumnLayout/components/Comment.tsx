@@ -5,7 +5,7 @@ export default function Comment(props) {
     const { item, updateItem, ...otherProps } = props;
     const [editing, setEditing] = useState(false);
         return <div
-            className="FlowLayout_Comment"
+            className="ColumnLayout_Comment"
             onClick={e => {
                 if (!editing) {
                     setEditing(!editing);

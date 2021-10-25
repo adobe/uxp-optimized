@@ -9,12 +9,20 @@ then your use, modification, or distribution of it requires the prior
 written permission of Adobe. 
 */
 
-export default function memoize<INPUT,OUTPUT>(fn: (input: INPUT) => OUTPUT): (input: INPUT) => OUTPUT {
+export default function memoize<INPUT extends object,OUTPUT>(fn: (input: INPUT) => OUTPUT): (input: INPUT) => OUTPUT {
     const symbol = Symbol();
+    const cache = new WeakMap<INPUT,OUTPUT>();
     return (input: INPUT) => {
-        let value = input[symbol];
+        const e = Object.isExtensible(input);
+        let value = e ? input[symbol] : cache.get(input);
         if (value === undefined) {
-            value = input[symbol] = fn(input);
+            value = fn(input);
+            if (e) {
+                input[symbol] = value;
+            }
+            else {
+                cache.set(input, value)
+            }
         }
         return value;
     }

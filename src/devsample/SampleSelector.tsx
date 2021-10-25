@@ -16,8 +16,12 @@ import FlowLayout from "./FlowLayout";
 import Horizontal from "./Horizontal";
 import { VirtualizerInputHandles, VirtualizerProperties } from "../Virtualizer"
 import UseSizeSample from "./UseSizeSample/UseSizeSample";
+import NewContainer from "./NewContainer";
+import ColumnLayout from "./ColumnLayout";
 
 const samples = {
+    container: { name: "New Container", container: NewContainer },
+    column: { name: "Column Layout", container: ColumnLayout },
     flow: { name: "Flow Layout", container: FlowLayout },
     horizontal: { name: "Horizontal", container: Horizontal },
     useSize: { name: "useSize hook", container: UseSizeSample },

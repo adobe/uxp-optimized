@@ -44,6 +44,23 @@ A react virtualizer for efficiently rendering long lists of items. Similar to re
     }
     </Virtualizer>
 
+### Custom CSS Properties
+
+See the FlowLayout sample.
+
+    .MyVirtualizer {
+        /* The vertical gap to add between horizontal rows, default = 0px */
+        --row-gap: 20px;
+        /* The horizontal gap to add between flex or column layout items, default = 0px */
+        --column-gap: 20px;
+    }
+
+    .MyVirtualItem {
+        /* Enables column width sizing. Use "auto" or an integer value. */
+        --column-count-self: auto | number;
+        /* If using "auto" above, then provide this or both min-width and max-width */
+        --optimum-width: 100px;
+    }
 
 #### Samples
 

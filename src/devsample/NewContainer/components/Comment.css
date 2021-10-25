@@ -1,4 +1,4 @@
-.FlowLayout_Comment {
+.Container_Comment {
     display: flex;
     flex-direction: row;
     background: #ffb7b9;
@@ -7,7 +7,7 @@
     box-sizing: border-box;
 }
 
-.FlowLayout_Comment > textarea {
+.Container_Comment > textarea {
     flex: 1;
     min-height: 100px;
     font-size: 20px;
