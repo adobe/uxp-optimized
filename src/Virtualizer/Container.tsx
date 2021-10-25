@@ -19,6 +19,7 @@ type Properties = {
   id?: string
   className?: string
   style?: CSSProperties
+  ref?: any
 }
 
 type InputHandles = {
