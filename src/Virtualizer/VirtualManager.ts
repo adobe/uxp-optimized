@@ -293,7 +293,7 @@ export default class VirtualManager<T extends object> {
     }
 
     private layoutChildren() {
-        let containerCss = getComputedStyle(this.container);
+        let containerCss = window.getComputedStyle(this.container);
         let columnGap = parseCssSize(containerCss.getPropertyValue("--column-gap"));
         let rowGap = parseCssSize(containerCss.getPropertyValue("--row-gap"));
         // create quick element lookup by key.
