@@ -225,13 +225,13 @@ export default class VirtualManager<T extends object> {
     }
 
     public static getReactElements<T extends object>(items: T[], renderKeys: string[], itemKey: ItemProperty<T,string>, itemType: ItemProperty<T,string>, factory: (item: T) => ReactElement, cache: any) {
-        const itemsByKey: { [key: string]: T } = {};
+        const itemsByKey: Map< string, T > = new Map()
         for (let item of items) {
-            itemsByKey[itemKey(item)] = item;
+            itemsByKey.set(itemKey(item), item);
         }
         return renderKeys.map((key, elementIndex) => {
             const elementKey = String(elementIndex);
-            const item = itemsByKey[key];
+            const item = itemsByKey.get(key);
             if (item == null) {
                 // if the item is not found it may have been temporarily hidden
                 // we will try to render it from cached element.
@@ -239,7 +239,7 @@ export default class VirtualManager<T extends object> {
                 if (cached) {
                     return cached;
                 }
-                console.warn("item missing: ", { key, elementIndex, items })
+                /// console.warn("item missing: ", { key, elementIndex, items })
                 return null;
             }
             return cache[key] = React.cloneElement(factory(item), {
