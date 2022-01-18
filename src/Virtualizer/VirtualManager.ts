@@ -11,16 +11,17 @@ written permission of Adobe.
 import "../common/ResizeObserver";
 import ResizeObserver, { ResizeObserverEntry, UxpResizeObserver } from '../common/ResizeObserver';
 import Rect from "../common/Rect";
-import Margin from "../common/Margin";
+import Margin, { parseCssSize } from "../common/Margin";
 import getStableArray from "./getStableArray";
 import React, { ReactElement } from "react";
 import { ScrollToOptions } from "./VirtualizerApi";
+import lerp from "../common/lerp";
 
 const initialVisibleItemCount = 30;
 
-export type ItemProperty<T,V> = (item: T) => V
+export type ItemProperty<T extends object,V> = (item: T) => V
 
-type ContainerProperties<T> = {
+type ContainerProperties<T extends object> = {
     container: HTMLDivElement
     horizontal: boolean
     items: T[]
@@ -30,6 +31,11 @@ type ContainerProperties<T> = {
     renderKeys: string[]
     setRenderKeys(value: string[]): void
     onLayout?: () => void
+}
+
+type ColumnProperties = {
+    count: number | null,   //  null means "auto"
+    optimumWidth: number | null,
 }
 
 /**
@@ -55,6 +61,9 @@ class ClassProperties {
     //  components of their class present
     valid: boolean = false;
 
+    column: ColumnProperties | null = null;
+
+    //  these fields are used to estimate the size of future elements of this class
     totalItemWidth = 0;
     totalItemHeight = 0;
     totalItemCount = 0;
@@ -80,6 +89,36 @@ class ClassProperties {
         // recalculate width/height
         this.width = Math.round(this.totalItemWidth / this.totalItemCount);
         this.height = Math.round(this.totalItemHeight / this.totalItemCount);
+    }
+
+    setFromCss(css: CSSStyleDeclaration) {
+        if (this.cssInline == null) {
+            //  we only record the first css display.
+            //  chrome is changing inline-block to block occasionally
+            //  this does mean clients cannot change display
+            //  with responsive media queries.
+            this.cssInline = (css.display || "").indexOf("inline") >= 0;
+        }
+        this.cssMargin = Margin.fromCssMargin(css)
+        let columnCountCss = css.getPropertyValue("--column-count-self").trim();
+        let column: ColumnProperties | null = null;
+        if (columnCountCss) {
+            let count = columnCountCss === "auto" ? null : parseInt(columnCountCss);
+            let optimumWidth: number | null = null;
+            if (count == null) {
+                optimumWidth = parseCssSize(css.getPropertyValue("--optimum-width"));
+                if (optimumWidth === 0) {
+                    let minWidth = parseCssSize(css.minWidth);
+                    let maxWidth = parseCssSize(css.maxWidth);
+                    if (minWidth === 0 || maxWidth === 0) {
+                        throw new Error("Expected either --optimum-width or min-width and max-width");
+                    }
+                    optimumWidth = Math.ceil((minWidth + maxWidth) / 2);
+                }
+            }
+            column = { count, optimumWidth};
+        }
+        this.column = column;
     }
 }
 
@@ -116,7 +155,7 @@ const px = (() => {
  * Changes to this DO NOT force a react re-render.
  * By contrast changes to our react state does force a re-render.
  */
-export default class VirtualManager<T> {
+export default class VirtualManager<T extends object> {
 
     private resizeObserver: UxpResizeObserver
     private container: HTMLDivElement
@@ -185,14 +224,14 @@ export default class VirtualManager<T> {
         return this.renderKeys;
     }
 
-    public static getReactElements<T>(items: T[], renderKeys: string[], itemKey: ItemProperty<T,string>, itemType: ItemProperty<T,string>, factory: (item: T) => ReactElement, cache: any) {
-        const itemsByKey: { [key: string]: T } = {};
+    public static getReactElements<T extends object>(items: T[], renderKeys: string[], itemKey: ItemProperty<T,string>, itemType: ItemProperty<T,string>, factory: (item: T) => ReactElement, cache: any) {
+        const itemsByKey: Map< string, T > = new Map()
         for (let item of items) {
-            itemsByKey[itemKey(item)] = item;
+            itemsByKey.set(itemKey(item), item);
         }
         return renderKeys.map((key, elementIndex) => {
             const elementKey = String(elementIndex);
-            const item = itemsByKey[key];
+            const item = itemsByKey.get(key);
             if (item == null) {
                 // if the item is not found it may have been temporarily hidden
                 // we will try to render it from cached element.
@@ -200,7 +239,7 @@ export default class VirtualManager<T> {
                 if (cached) {
                     return cached;
                 }
-                console.warn("item missing: ", { key, elementIndex, items })
+                /// console.warn("item missing: ", { key, elementIndex, items })
                 return null;
             }
             return cache[key] = React.cloneElement(factory(item), {
@@ -254,12 +293,15 @@ export default class VirtualManager<T> {
     }
 
     private layoutChildren() {
+        let containerCss = window.getComputedStyle(this.container);
+        let columnGap = parseCssSize(containerCss.getPropertyValue("--column-gap"));
+        let rowGap = parseCssSize(containerCss.getPropertyValue("--row-gap"));
         // create quick element lookup by key.
         let elementLookup = this.getElementLookupByKey();
         let x = 0, y = 0, width = this.containerWidth - this.containerPadding.horizontal, height = 0;
         function newLine() {
             x = 0;
-            y = height;
+            y = height + rowGap;
         }
 
         // now iterate items
@@ -284,7 +326,7 @@ export default class VirtualManager<T> {
             let properties = this.getItemProperties(key, type);
             let classProps = this.classProperties.get(type);
             if (!classProps) {
-                console.warn("missing class properties: " + type);
+                // console.warn("missing class properties: " + type);
                 break;
             }
             let margin = classProps.cssMargin;
@@ -292,7 +334,23 @@ export default class VirtualManager<T> {
             let elementWidth = properties.width + margin.horizontal;
             let elementHeight = properties.height + margin.vertical;
             let left: number, top: number;
-            if (!this.horizontal && (!inline || (x + elementWidth) > width)) {
+            // new column layout
+            let { column } = classProps;
+            if (column) {
+                let count = column.count || Math.max(1, Math.round(width / (column.optimumWidth! + columnGap)));
+                let index = Math.round(x / (elementWidth + columnGap));
+
+                elementWidth = Math.floor((width - columnGap * (count - 1)) / count);
+
+                // now we will tweak the x position to make sure we right align
+                // and distribute extra pixels fairly evenly across all columns
+                let l2r = index * (elementWidth + columnGap);
+                let r2l = width - (count - index) * (elementWidth + columnGap) + columnGap;
+                let alpha = count == 1 ? 0 : index / (count - 1);
+                x = Math.round(lerp(l2r, r2l, alpha));
+            }
+
+            if (x > 0 && !this.horizontal && (!inline || (x + elementWidth) > width)) {
                 newLine();
             }
             left = x + this.containerPadding.left;
@@ -302,10 +360,10 @@ export default class VirtualManager<T> {
             }
             height = Math.max(height, y + elementHeight);
             if (inline) {
-                x += elementWidth;
+                x += elementWidth + columnGap;
             }
             else {
-                y += elementHeight;
+                y += elementHeight + rowGap;
             }
             // store on properties
             properties.x = left;
@@ -320,6 +378,9 @@ export default class VirtualManager<T> {
                 }
                 style.left = px(left);
                 style.top = px(top);
+                if (column != null) {
+                    style.width = px(elementWidth);
+                }
                 if (!inline) {
                     style.width = px(width - margin.horizontal);
                 }
@@ -370,7 +431,6 @@ export default class VirtualManager<T> {
         return elementLookup;
     }
 
-    private static elementObserved = Symbol('elementObserved');
     private ensureElementsObservedAndSized() {
         this.resizeObserver.observe(this.container);
         for (let child: Node | null = this.container.firstChild; child != null; child = child.nextSibling) {
@@ -598,14 +658,7 @@ export default class VirtualManager<T> {
                             classProps = new ClassProperties(type);
                             this.classProperties.set(type, classProps);
                         }
-                        if (classProps.cssInline == null) {
-                            //  we only record the first css display.
-                            //  chrome is changing inline-block to block occasionally
-                            //  this does mean clients cannot change display
-                            //  with responsive media queries.
-                            classProps.cssInline = (css.display || "").indexOf("inline") >= 0;
-                        }
-                        classProps.cssMargin = Margin.fromCssMargin(css)
+                        classProps.setFromCss(css);
                     }
                     classProps.setItemSize(width, height);
                 }
@@ -751,9 +804,9 @@ export default class VirtualManager<T> {
         return props;
     }
 
-    static instance<T>(container: HTMLElement): VirtualManager<T> | undefined
-    static instance<T>(container: HTMLElement, props: ContainerProperties<T>): VirtualManager<T>
-    static instance<T>(container: HTMLElement, props?: ContainerProperties<T>): VirtualManager<T> | undefined {
+    static instance<T extends object>(container: HTMLElement): VirtualManager<T> | undefined
+    static instance<T extends object>(container: HTMLElement, props: ContainerProperties<T>): VirtualManager<T>
+    static instance<T extends object>(container: HTMLElement, props?: ContainerProperties<T>): VirtualManager<T> | undefined {
         let manager = container[VirtualManager.symbol];
         if (manager == null && props != null) {
             manager = new VirtualManager<T>(props);
@@ -761,7 +814,7 @@ export default class VirtualManager<T> {
         return manager;
     }
 
-    static update<T>(props: ContainerProperties<T>) {
+    static update<T extends object>(props: ContainerProperties<T>) {
         let manager = VirtualManager.instance<T>(props.container, props);
         manager.update(props);
         return manager.renderKeys;

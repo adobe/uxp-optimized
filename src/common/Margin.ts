@@ -8,9 +8,8 @@ it. If you have received this file from a source other than Adobe,
 then your use, modification, or distribution of it requires the prior
 written permission of Adobe. 
 */
-
-function parseCssSize(size: string | null) {
-    if (size != null) {
+export function parseCssSize(size: string | null) {
+    if (size && size !== "none") {
         if (size.endsWith("px")) {
             return parseFloat(size.slice(0, -2));
         }

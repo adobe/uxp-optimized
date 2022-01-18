@@ -8,15 +8,15 @@ it. If you have received this file from a source other than Adobe,
 then your use, modification, or distribution of it requires the prior
 written permission of Adobe.
 */
-import React, { useState, useRef, useMemo, forwardRef, useImperativeHandle, RefForwardingComponent, Ref, MutableRefObject } from 'react';
+import React, { useState, useRef, useMemo, forwardRef, useImperativeHandle, Ref, MutableRefObject, ForwardRefRenderFunction } from 'react';
 import VirtualManager, { ItemProperty } from './VirtualManager';
 import memoize from '../common/memoize';
 import '../common/shims';
 import { ScrollToOptions, VirtualizerInputHandles, VirtualizerProperties } from './VirtualizerApi';
 
-function createPropertyGetter<T,V>(property: keyof T | ItemProperty<T,V> | undefined):  ItemProperty<T,V> | undefined
-function createPropertyGetter<T,V>(property: keyof T | ItemProperty<T,V> | undefined, defaultValue: () => ItemProperty<T,V>, validator?: (value: V, item: T) => void):  ItemProperty<T,V>
-function createPropertyGetter<T,V>(
+function createPropertyGetter<T extends object,V>(property: keyof T | ItemProperty<T,V> | undefined):  ItemProperty<T,V> | undefined
+function createPropertyGetter<T extends object,V>(property: keyof T | ItemProperty<T,V> | undefined, defaultValue: () => ItemProperty<T,V>, validator?: (value: V, item: T) => void):  ItemProperty<T,V>
+function createPropertyGetter<T extends object,V>(
     property: keyof T | ItemProperty<T,V> | undefined,
     defaultValue?: () => ItemProperty<T,V>,
     validator?: (value: V, item: T) => void
@@ -41,10 +41,10 @@ function createPropertyGetter<T,V>(
     throw new Error(`Unsupported property: ${property}`);
 }
 
-export default forwardRef(function Virtualizer<T>(properties: VirtualizerProperties<T>, ref: Ref<VirtualizerInputHandles>) {
+export default forwardRef(function Virtualizer<T extends object>(properties: VirtualizerProperties<T>, ref: Ref<VirtualizerInputHandles>) {
     let { items, itemKey, itemType, itemRect, scrollToItem, onLayout, cacheElements = true, style, children: factory, ...otherProps } = properties;
     let horizontal = properties.direction === "horizontal";
-    const itemKeyFunction = useMemo(() => memoize(createPropertyGetter(itemKey, () => {
+    const itemKeyFunction = useMemo(() => memoize(createPropertyGetter<T,string>(itemKey, () => {
         //  if user provides no key property/function
         //  then we use the item index as key
         const itemToIndex = new Map<T,string>(items.map((item, index) => [item, String(index)]));
@@ -115,9 +115,6 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
     }), [cache.current.container]);
     function setContainer(container) {
         if (container) {
-            if (ref) {
-                (ref as any).current = container;
-            }
             cache.current!.container = container;
             //  we also update the renderKeys immediately
             //  this matters for future renders where
@@ -168,4 +165,4 @@ export default forwardRef(function Virtualizer<T>(properties: VirtualizerPropert
             }
         </div>
     );
-}) as RefForwardingComponent<VirtualizerInputHandles, VirtualizerProperties>;
+}) as ForwardRefRenderFunction<VirtualizerInputHandles, VirtualizerProperties>;

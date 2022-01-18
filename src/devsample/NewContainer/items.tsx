@@ -1,3 +1,5 @@
+import { Header, Icon, Comment } from "./components";
+import React from "react";
 
 const lines = [
     "This is a short line",
@@ -7,33 +9,19 @@ const lines = [
     "Extremely long sentence here which will probably wrap around to a total of three lines or more and it's also a run-on sentence.",
 ];
 
-export const headerType = "Header";
-export const iconType = "Icon";
-export const commentType = "Comment";
-
 let items = new Array(10000).fill(null).map((value, index) => {
     let itemsPerSection = 20;
     let section = Math.floor(index / itemsPerSection);
+    let key = `${index}`;
     if (index % itemsPerSection === 0) {
-        return {
-            key: `${-1 - section}`,
-            type: headerType,
-            text: `Section ${section}` };
+        return <Header key={key}>Section {section}</Header>;
     }
     else {
         if (Math.floor(index / 12) % 2 === 0) {
-            return {
-                key: `${index}`,
-                type: iconType,
-                image: `https://picsum.photos/id/${index % 50}/200/200`
-            };
+            return <Icon key={key} image={`https://picsum.photos/id/${index % 50}/200/200`} />
         }
         else {
-            return {
-                key: `${index}`,
-                type: commentType,
-                text: lines[index % lines.length]
-            };
+            return <Comment key={key}>{lines[index % lines.length]}</Comment>
         }
     }
 })

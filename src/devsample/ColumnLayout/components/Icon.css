@@ -1,5 +1,6 @@
-.FlowLayout_Icon {
+.ColumnLayout_Icon {
     /* use presence of display: inline to indicate grid layout */
     display: inline-block;
-    width: 100px;
+    --column-count-self: auto;
+    --optimum-width: 120px;
 }
