@@ -535,6 +535,17 @@ export default class VirtualManager<T extends object> {
         return [ renderKeys, existingKeys ];
     }
 
+    /**
+     * Clip scrollTop - UXP should do this automatically, but it doesn't due to bug UXP-10612
+     * Can remove this once UXP bug is fixed
+     * @returns number between 0 the container area - total area
+     */
+    private getClippedScrollTarget(scrollTarget: number) {
+        const scrollPx = this.container[this.horizontal ? "scrollWidth": "scrollHeight"];
+        const clientPx = this.container[this.horizontal ? "clientWidth": "clientHeight"]
+        return Math.max(0, Math.min(scrollTarget, scrollPx - clientPx));
+    }
+
     private getFocusedItemKey() {
         for (let element: Node | null = document.activeElement; element != null; element = element.parentNode) {
             if (isHTMLElement(element)) {
@@ -556,10 +567,7 @@ export default class VirtualManager<T extends object> {
             return;
         }
 
-        // Clip scrollTop - UXP should do this automatically, but it doesn't due to bug UXP-10612
-        // Can remove this once UXP bug is fixed
-        const scrollHeight = this.container.scrollHeight;
-        const scrollTop = Math.max(0, Math.min(this.container.scrollTop, scrollHeight - this.container.clientHeight));
+        const scrollTop = this.getClippedScrollTarget(this.container.scrollTop)
         if (this.container.scrollTop !== scrollTop) {
             this.container.scrollTop = scrollTop;
         }
@@ -767,8 +775,8 @@ export default class VirtualManager<T extends object> {
                 let time = (Date.now() - this.scrollStartTime!) / 1000;
                 let elapsed = Math.min(time, this.scrollDuration);
                 let alpha = this.scrollDuration > 0 ? elapsed / this.scrollDuration : 1.0;
-                let animatedTopNow = targetPosition - (1 - alpha) * startDelta;
-                this.container[this.horizontal ? "scrollLeft" : "scrollTop"] = animatedTopNow;
+                let animatedTopNow =  targetPosition - (1 - alpha) * startDelta;
+                this.container[this.horizontal ? "scrollLeft" : "scrollTop"] = this.getClippedScrollTarget(animatedTopNow);
                 //  keep animating for twice the scroll duration.
                 //  this provides extra time after scroll for resizing of
                 //  nearby element positions to get fixed to the anchor point.
