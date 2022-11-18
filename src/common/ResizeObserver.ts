@@ -87,7 +87,7 @@ declare global {
 if (typeof window !== "undefined") {
     if (window.ResizeObserver == null) {
         if (isUXP) {
-            window.ResizeObserver = ResizeObserver;
+            window.ResizeObserver = ResizeObserver as any;
         }
         else {
             console.error("This browser requires a ResizeObserver shim");

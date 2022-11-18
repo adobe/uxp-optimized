@@ -34,9 +34,7 @@ type InputHandles = {
  */
 export default forwardRef(function Container<T>(properties: Properties, ref: Ref<InputHandles>) {
   let { children, ...rest } = properties;
-  let items = ((Array.isArray(children) ? children : [children]) as VirtualItem[]).flat(Number.MAX_SAFE_INTEGER).filter(Boolean);
-  console.log("....", items);
-  // console.log(items.map(item => item.type.toString()))
+  let items = ((Array.isArray(children) ? children : [children]) as VirtualItem[]).flat<VirtualItem[],0>(Number.MAX_SAFE_INTEGER as any).filter(Boolean);
   // we need type field.
 
   return (

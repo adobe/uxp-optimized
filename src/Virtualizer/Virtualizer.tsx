@@ -38,7 +38,7 @@ function createPropertyGetter<T extends object,V>(
     if (typeof property === "string" || typeof property === "symbol") {
         return (item: T) => item[property] as any as V;
     }
-    throw new Error(`Unsupported property: ${property}`);
+    throw new Error(`Unsupported property: ${String(property)}`);
 }
 
 export default forwardRef(function Virtualizer<T extends object>(properties: VirtualizerProperties<T>, ref: Ref<VirtualizerInputHandles>) {
