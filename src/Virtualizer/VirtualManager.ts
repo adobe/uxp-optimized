@@ -775,7 +775,7 @@ export default class VirtualManager<T extends object> {
                 let time = (Date.now() - this.scrollStartTime!) / 1000;
                 let elapsed = Math.min(time, this.scrollDuration);
                 let alpha = this.scrollDuration > 0 ? elapsed / this.scrollDuration : 1.0;
-                let animatedTopNow =  targetPosition - (1 - alpha) * startDelta;
+                let animatedTopNow = targetPosition - (1 - alpha) * startDelta;
                 this.container[this.horizontal ? "scrollLeft" : "scrollTop"] = this.getClippedScrollTarget(animatedTopNow);
                 //  keep animating for twice the scroll duration.
                 //  this provides extra time after scroll for resizing of
