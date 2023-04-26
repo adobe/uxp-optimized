@@ -9,7 +9,10 @@ then your use, modification, or distribution of it requires the prior
 written permission of Adobe.
 */
 import "../common/ResizeObserver";
-import ResizeObserver, { ResizeObserverEntry, UxpResizeObserver } from '../common/ResizeObserver';
+import ResizeObserver, {
+    ResizeObserverEntry,
+    UxpResizeObserver,
+} from "../common/ResizeObserver";
 import Rect from "../common/Rect";
 import Margin, { parseCssSize } from "../common/Margin";
 import getStableArray from "./getStableArray";
@@ -19,24 +22,24 @@ import lerp from "../common/lerp";
 
 const initialVisibleItemCount = 30;
 
-export type ItemProperty<T extends object,V> = (item: T) => V
+export type ItemProperty<T extends object, V> = (item: T) => V;
 
 type ContainerProperties<T extends object> = {
-    container: HTMLDivElement
-    horizontal: boolean
-    items: T[]
-    itemKey: ItemProperty<T,string>
-    itemType: ItemProperty<T,string>
-    itemRect?: ItemProperty<T,Rect>
-    renderKeys: string[]
-    setRenderKeys(value: string[]): void
-    onLayout?: () => void
-}
+    container: HTMLDivElement;
+    horizontal: boolean;
+    items: T[];
+    itemKey: ItemProperty<T, string>;
+    itemType: ItemProperty<T, string>;
+    itemRect?: ItemProperty<T, Rect>;
+    renderKeys: string[];
+    setRenderKeys(value: string[]): void;
+    onLayout?: () => void;
+};
 
 type ColumnProperties = {
-    count: number | null,   //  null means "auto"
-    optimumWidth: number | null,
-}
+    count: number | null; //  null means "auto"
+    optimumWidth: number | null;
+};
 
 /**
  * Used when scrolling to item with flow layout.
@@ -44,11 +47,11 @@ type ColumnProperties = {
  * so we may have to correct scrollTop to keep item in view after sizing.
  */
 type ScrollAnchor = {
-    itemKey: string,
-    itemPin: number, // 0 = top, 0.5 = middle, 1 = bottom
-    windowPin: number, // 0 = top, 0.5 = middle, 1 = bottom
-    duration: number, // 0 = immediate, otherwise duration in seconds, default = 0.5
-}
+    itemKey: string;
+    itemPin: number; // 0 = top, 0.5 = middle, 1 = bottom
+    windowPin: number; // 0 = top, 0.5 = middle, 1 = bottom
+    duration: number; // 0 = immediate, otherwise duration in seconds, default = 0.5
+};
 
 class ClassProperties {
     type!: string;
@@ -99,24 +102,29 @@ class ClassProperties {
             //  with responsive media queries.
             this.cssInline = (css.display || "").indexOf("inline") >= 0;
         }
-        this.cssMargin = Margin.fromCssMargin(css)
+        this.cssMargin = Margin.fromCssMargin(css);
         let columnCountCss = css.getPropertyValue("--column-count-self").trim();
         let column: ColumnProperties | null = null;
         if (columnCountCss) {
-            let count = columnCountCss === "auto" ? null : parseInt(columnCountCss);
+            let count =
+                columnCountCss === "auto" ? null : parseInt(columnCountCss);
             let optimumWidth: number | null = null;
             if (count == null) {
-                optimumWidth = parseCssSize(css.getPropertyValue("--optimum-width"));
+                optimumWidth = parseCssSize(
+                    css.getPropertyValue("--optimum-width")
+                );
                 if (optimumWidth === 0) {
                     let minWidth = parseCssSize(css.minWidth);
                     let maxWidth = parseCssSize(css.maxWidth);
                     if (minWidth === 0 || maxWidth === 0) {
-                        throw new Error("Expected either --optimum-width or min-width and max-width");
+                        throw new Error(
+                            "Expected either --optimum-width or min-width and max-width"
+                        );
                     }
                     optimumWidth = Math.ceil((minWidth + maxWidth) / 2);
                 }
             }
-            column = { count, optimumWidth};
+            column = { count, optimumWidth };
         }
         this.column = column;
     }
@@ -140,14 +148,14 @@ function isHTMLElement(node: Node): node is HTMLElement {
 
 //  returns a memoized pixel css position.
 const px = (() => {
-    const cache: string[] = []
+    const cache: string[] = [];
     return (value: number) => {
         let cached = cache[value];
         if (cached === undefined) {
             cached = cache[value] = `${value}px`;
         }
         return cached;
-    }
+    };
 })();
 
 /**
@@ -156,24 +164,23 @@ const px = (() => {
  * By contrast changes to our react state does force a re-render.
  */
 export default class VirtualManager<T extends object> {
-
-    private resizeObserver: UxpResizeObserver
-    private container: HTMLDivElement
-    private horizontal: boolean
-    private items!: T[]
-    private itemLookup: Map<string,T>
-    private itemKey: ItemProperty<T,string>
-    private itemType: ItemProperty<T,string>
-    private itemRect?: ItemProperty<T,Rect>
-    private renderKeys!: string[]
-    private setRenderKeys!: (renderKeys: string[]) => void
-    private itemProperties: { [key: string]: ItemProperties | undefined } = {}
-    private classProperties = new Map<string,ClassProperties>();
-    private containerPadding: Margin = new Margin(0)
-    private placeholder: HTMLDivElement
+    private resizeObserver: UxpResizeObserver;
+    private container: HTMLDivElement;
+    private horizontal: boolean;
+    private items!: T[];
+    private itemLookup: Map<string, T>;
+    private itemKey: ItemProperty<T, string>;
+    private itemType: ItemProperty<T, string>;
+    private itemRect?: ItemProperty<T, Rect>;
+    private renderKeys!: string[];
+    private setRenderKeys!: (renderKeys: string[]) => void;
+    private itemProperties: { [key: string]: ItemProperties | undefined } = {};
+    private classProperties = new Map<string, ClassProperties>();
+    private containerPadding: Margin = new Margin(0);
+    private placeholder: HTMLDivElement;
     private containerWidth: number;
     private scrollAnchor: ScrollAnchor | null = null;
-    private onLayout?: () => void
+    private onLayout?: () => void;
 
     constructor(props: ContainerProperties<T>) {
         this.container = props.container;
@@ -192,7 +199,7 @@ export default class VirtualManager<T extends object> {
         });
         this.container.addEventListener("wheel", (e) => {
             this.cancelScrollAnimation();
-        })
+        });
         this.placeholder = document.createElement("div");
         this.container.appendChild(this.placeholder);
         this.update(props);
@@ -211,8 +218,14 @@ export default class VirtualManager<T extends object> {
             for (let item of this.items) {
                 let key = this.itemKey(item);
                 if (checkForDuplicates.has(key)) {
-                    console.error(`Duplicate items:`, this.itemLookup.get(key), item);
-                    throw new Error(`Item keys must be unique. Found duplicate: ${key}`);
+                    console.error(
+                        `Duplicate items:`,
+                        this.itemLookup.get(key),
+                        item
+                    );
+                    throw new Error(
+                        `Item keys must be unique. Found duplicate: ${key}`
+                    );
                 }
                 checkForDuplicates.add(key);
                 this.itemLookup.set(key, item);
@@ -224,8 +237,15 @@ export default class VirtualManager<T extends object> {
         return this.renderKeys;
     }
 
-    public static getReactElements<T extends object>(items: T[], renderKeys: string[], itemKey: ItemProperty<T,string>, itemType: ItemProperty<T,string>, factory: (item: T) => ReactElement, cache: any) {
-        const itemsByKey: Map< string, T > = new Map()
+    public static getReactElements<T extends object>(
+        items: T[],
+        renderKeys: string[],
+        itemKey: ItemProperty<T, string>,
+        itemType: ItemProperty<T, string>,
+        factory: (item: T) => ReactElement,
+        cache: any
+    ) {
+        const itemsByKey: Map<string, T> = new Map();
         for (let item of items) {
             itemsByKey.set(itemKey(item), item);
         }
@@ -242,16 +262,16 @@ export default class VirtualManager<T extends object> {
                 /// console.warn("item missing: ", { key, elementIndex, items })
                 return null;
             }
-            return cache[key] = React.cloneElement(factory(item), {
+            return (cache[key] = React.cloneElement(factory(item), {
                 key: elementKey,
                 "data-key": key,
                 "data-type": itemType(item),
-            });
-        })
+            }));
+        });
     }
 
-    getItemRect(item: T | null, key: string): Rect | null
-    getItemRect(item: T, key?: string): Rect | null
+    getItemRect(item: T | null, key: string): Rect | null;
+    getItemRect(item: T, key?: string): Rect | null;
     getItemRect(item: T | null, key?: string): Rect | null {
         if (item == null && key != null) {
             item = this.itemLookup.get(key) || null;
@@ -259,8 +279,17 @@ export default class VirtualManager<T extends object> {
         if (item != null) {
             let rect = this.itemRect != null ? this.itemRect(item) : null;
             if (rect != null) {
-                if (rect.x == null || rect.y == null || rect.width == null || rect.height == null) {
-                    throw new Error(`Item rect missing required properties (x,y,width,height): ${JSON.stringify(rect)}`)
+                if (
+                    rect.x == null ||
+                    rect.y == null ||
+                    rect.width == null ||
+                    rect.height == null
+                ) {
+                    throw new Error(
+                        `Item rect missing required properties (x,y,width,height): ${JSON.stringify(
+                            rect
+                        )}`
+                    );
                 }
                 return rect;
             }
@@ -277,10 +306,10 @@ export default class VirtualManager<T extends object> {
         return null;
     }
 
-    isScrolling = false
+    isScrolling = false;
     updateAndLayout(forceLayout = false) {
         this.isScrolling = true;
-        let needsLayout = this.updateIndexes()
+        let needsLayout = this.updateIndexes();
         this.ensureElementsObservedAndSized();
         if (needsLayout || forceLayout) {
             this.layoutChildren();
@@ -294,11 +323,16 @@ export default class VirtualManager<T extends object> {
 
     private layoutChildren() {
         let containerCss = window.getComputedStyle(this.container);
-        let columnGap = parseCssSize(containerCss.getPropertyValue("--column-gap"));
+        let columnGap = parseCssSize(
+            containerCss.getPropertyValue("--column-gap")
+        );
         let rowGap = parseCssSize(containerCss.getPropertyValue("--row-gap"));
         // create quick element lookup by key.
         let elementLookup = this.getElementLookupByKey();
-        let x = 0, y = 0, width = this.containerWidth - this.containerPadding.horizontal, height = 0;
+        let x = 0,
+            y = 0,
+            width = this.containerWidth - this.containerPadding.horizontal,
+            height = 0;
         function newLine() {
             x = 0;
             y = height + rowGap;
@@ -337,20 +371,34 @@ export default class VirtualManager<T extends object> {
             // new column layout
             let { column } = classProps;
             if (column) {
-                let count = column.count || Math.max(1, Math.round(width / (column.optimumWidth! + columnGap)));
+                let count =
+                    column.count ||
+                    Math.max(
+                        1,
+                        Math.round(width / (column.optimumWidth! + columnGap))
+                    );
                 let index = Math.round(x / (elementWidth + columnGap));
 
-                elementWidth = Math.floor((width - columnGap * (count - 1)) / count);
+                elementWidth = Math.floor(
+                    (width - columnGap * (count - 1)) / count
+                );
 
                 // now we will tweak the x position to make sure we right align
                 // and distribute extra pixels fairly evenly across all columns
                 let l2r = index * (elementWidth + columnGap);
-                let r2l = width - (count - index) * (elementWidth + columnGap) + columnGap;
+                let r2l =
+                    width -
+                    (count - index) * (elementWidth + columnGap) +
+                    columnGap;
                 let alpha = count == 1 ? 0 : index / (count - 1);
                 x = Math.round(lerp(l2r, r2l, alpha));
             }
 
-            if (x > 0 && !this.horizontal && (!inline || (x + elementWidth) > width)) {
+            if (
+                x > 0 &&
+                !this.horizontal &&
+                (!inline || x + elementWidth > width)
+            ) {
                 newLine();
             }
             left = x + this.containerPadding.left;
@@ -361,8 +409,7 @@ export default class VirtualManager<T extends object> {
             height = Math.max(height, y + elementHeight);
             if (inline) {
                 x += elementWidth + columnGap;
-            }
-            else {
+            } else {
                 y += elementHeight + rowGap;
             }
             // store on properties
@@ -402,8 +449,7 @@ export default class VirtualManager<T extends object> {
         // increase the placeholders height to match our layed out height.
         if (this.horizontal) {
             this.placeholder.style.width = px(width);
-        }
-        else {
+        } else {
             this.placeholder.style.height = px(height);
         }
     }
@@ -411,19 +457,26 @@ export default class VirtualManager<T extends object> {
     private getElementLookupByKey() {
         let elementLookup = new Map<string, HTMLElement>();
         let index = 0;
-        for (let child: Node | null = this.container.firstChild; child != null; child = child.nextSibling) {
+        for (
+            let child: Node | null = this.container.firstChild;
+            child != null;
+            child = child.nextSibling
+        ) {
             if (isHTMLElement(child)) {
                 let key = child.dataset.key;
                 if (key) {
                     elementLookup.set(key, child);
-                }
-                else if (child.previousSibling != null) {
+                } else if (child.previousSibling != null) {
                     // the first child is the height placeholder element
                     // every other element should have a data-key property
                     // if not that means they used a function or class component
                     //  that is not passing ...otherProps to it's rendered element.
                     let item = this.items[index];
-                    throw new Error(`Virtualizer item error: Function and Class components must pass through ...otherProps to rendered element. ie: <div {...otherProps}></div>. Check element created for ${JSON.stringify(item)}`);
+                    throw new Error(
+                        `Virtualizer item error: Function and Class components must pass through ...otherProps to rendered element. ie: <div {...otherProps}></div>. Check element created for ${JSON.stringify(
+                            item
+                        )}`
+                    );
                 }
             }
             index++;
@@ -433,7 +486,11 @@ export default class VirtualManager<T extends object> {
 
     private ensureElementsObservedAndSized() {
         this.resizeObserver.observe(this.container);
-        for (let child: Node | null = this.container.firstChild; child != null; child = child.nextSibling) {
+        for (
+            let child: Node | null = this.container.firstChild;
+            child != null;
+            child = child.nextSibling
+        ) {
             if (child.nodeType === 1) {
                 this.resizeObserver.observe(child as Element);
                 // also make sure we've sized it if available.
@@ -469,16 +526,27 @@ export default class VirtualManager<T extends object> {
 
     private getRenderItemIndices(scrollDirection: number) {
         let { horizontal } = this;
-        let beginning = Math.max(0, this.container[horizontal ? "scrollLeft" : "scrollTop"]);
-        let { pageSize, prerenderScrollDirection, prerenderOtherDirection } = this;
+        let beginning = Math.max(
+            0,
+            this.container[horizontal ? "scrollLeft" : "scrollTop"]
+        );
+        let { pageSize, prerenderScrollDirection, prerenderOtherDirection } =
+            this;
         if (scrollDirection === 0) {
             // if we aren't scrolling then each direction is other.
             prerenderScrollDirection = prerenderOtherDirection;
         }
         let end = beginning + pageSize;
-        let totalPagesSize = pageSize + prerenderScrollDirection + prerenderOtherDirection;
+        let totalPagesSize =
+            pageSize + prerenderScrollDirection + prerenderOtherDirection;
         // now expand top
-        beginning = Math.max(0, beginning - (scrollDirection >= 0 ? prerenderOtherDirection : prerenderScrollDirection));
+        beginning = Math.max(
+            0,
+            beginning -
+                (scrollDirection >= 0
+                    ? prerenderOtherDirection
+                    : prerenderScrollDirection)
+        );
         // then expand bottom by whatever is remaining. (if this is larger than content area, that is fine)
         end = beginning + totalPagesSize;
 
@@ -489,9 +557,9 @@ export default class VirtualManager<T extends object> {
         // This pre-sizing code ensures that we always contain at least one of each
         // item type in the document so that we can capture sizing and css class properties.
         const presize = !this.isManualLayout;
-        const presizeTypes = presize ? new Map<string,string>() : null;
+        const presizeTypes = presize ? new Map<string, string>() : null;
 
-        let size = horizontal ? "width": "height";
+        let size = horizontal ? "width" : "height";
         let position = horizontal ? "x" : "y";
 
         for (let index = 0; index < this.items.length; index++) {
@@ -501,10 +569,13 @@ export default class VirtualManager<T extends object> {
             existingKeys.add(key);
 
             const rect = this.getItemRect(item, key);
-            if (rect && ((rect[position] + rect[size]) > beginning) && (rect[position] <= end)) {
+            if (
+                rect &&
+                rect[position] + rect[size] > beginning &&
+                rect[position] <= end
+            ) {
                 renderKeys.add(key);
-            }
-            else if (presizeTypes != null) {
+            } else if (presizeTypes != null) {
                 let type = this.itemType(item);
                 if (!presizeTypes.has(type)) {
                     presizeTypes.set(type, key);
@@ -514,8 +585,12 @@ export default class VirtualManager<T extends object> {
 
         // we have to render *some* items since we may only get their accurate reported positions after they are rendered.
         if (renderKeys.size === 0) {
-            for (let i = 0; i < initialVisibleItemCount && i < this.items.length; i++) {
-                renderKeys.add(this.itemKey(this.items[i]))
+            for (
+                let i = 0;
+                i < initialVisibleItemCount && i < this.items.length;
+                i++
+            ) {
+                renderKeys.add(this.itemKey(this.items[i]));
             }
         }
 
@@ -532,7 +607,7 @@ export default class VirtualManager<T extends object> {
             }
         }
 
-        return [ renderKeys, existingKeys ];
+        return [renderKeys, existingKeys];
     }
 
     /**
@@ -541,13 +616,19 @@ export default class VirtualManager<T extends object> {
      * @returns number between 0 the container area - total area
      */
     private getClippedScrollTarget(scrollTarget: number) {
-        const scrollPx = this.container[this.horizontal ? "scrollWidth": "scrollHeight"];
-        const clientPx = this.container[this.horizontal ? "clientWidth": "clientHeight"]
+        const scrollPx =
+            this.container[this.horizontal ? "scrollWidth" : "scrollHeight"];
+        const clientPx =
+            this.container[this.horizontal ? "clientWidth" : "clientHeight"];
         return Math.max(0, Math.min(scrollTarget, scrollPx - clientPx));
     }
 
     private getFocusedItemKey() {
-        for (let element: Node | null = document.activeElement; element != null; element = element.parentNode) {
+        for (
+            let element: Node | null = document.activeElement;
+            element != null;
+            element = element.parentNode
+        ) {
             if (isHTMLElement(element)) {
                 const key = element.dataset.key;
                 if (key) {
@@ -561,13 +642,13 @@ export default class VirtualManager<T extends object> {
     //  TODO: This needs to be fixed for horizontal mode. Somehow we missed this.
     private lastScrollTop: number = 0;
     private scrollDirection = 0; // 1 = down, -1 = up, 0 = none
-    private previousItems?: T[]
+    private previousItems?: T[];
     private updateIndexes() {
         if (this.pageSize === 0) {
             return;
         }
 
-        const scrollTop = this.getClippedScrollTarget(this.container.scrollTop)
+        const scrollTop = this.getClippedScrollTarget(this.container.scrollTop);
         if (this.container.scrollTop !== scrollTop) {
             this.container.scrollTop = scrollTop;
         }
@@ -580,14 +661,15 @@ export default class VirtualManager<T extends object> {
         const itemsProbablyChanged = this.items.length !== previousItems.length;
         if (itemsProbablyChanged) {
             this.scrollDirection = 0;
-        }
-        else if (scrollDelta !== 0) {
+        } else if (scrollDelta !== 0) {
             this.scrollDirection = Math.sign(scrollDelta);
         }
 
         // Get a set of the items we want to render, and a set of all the items
         // (do this in one method, so we only need to iterate through all the items once)
-        const [ renderKeys, existingKeys ] = this.getRenderItemIndices(this.scrollDirection);
+        const [renderKeys, existingKeys] = this.getRenderItemIndices(
+            this.scrollDirection
+        );
 
         const getType = (key: string) => {
             if (key != null) {
@@ -600,14 +682,9 @@ export default class VirtualManager<T extends object> {
         };
         //  We use keys since even with additions/removals, keys are stable
         let oldKeys = this.renderKeys;
-        let newKeys = getStableArray(
-            oldKeys,
-            renderKeys,
-            getType,
-            getType
-        );
+        let newKeys = getStableArray(oldKeys, renderKeys, getType, getType);
         const elementLookup = this.getElementLookupByKey();
-        newKeys.forEach(key => {
+        newKeys.forEach((key) => {
             let element = elementLookup.get(key);
             if (element) {
                 const deleted = !existingKeys.has(key);
@@ -621,7 +698,10 @@ export default class VirtualManager<T extends object> {
         // console.log({ existingKeys, renderKeys, newKeys })
 
         // we do a deep compare as we don't want to cause react re-rendering unless our rendered item renderKeys have changed.
-        if (oldKeys.length !== newKeys.length || JSON.stringify(oldKeys) !== JSON.stringify(newKeys)) {
+        if (
+            oldKeys.length !== newKeys.length ||
+            JSON.stringify(oldKeys) !== JSON.stringify(newKeys)
+        ) {
             // const debug = true;
             // if (debug) {
             //     let counts: any = {};
@@ -640,7 +720,9 @@ export default class VirtualManager<T extends object> {
 
     onElementSized(element: HTMLElement) {
         if (element === this.container) {
-            this.containerPadding = Margin.fromCssPadding(getComputedStyle(element));
+            this.containerPadding = Margin.fromCssPadding(
+                getComputedStyle(element)
+            );
         }
         let { key, type } = element.dataset;
         if (key && type) {
@@ -654,7 +736,8 @@ export default class VirtualManager<T extends object> {
             const width = element.offsetWidth;
             const height = element.offsetHeight;
             if (width > 0 && height > 0) {
-                let changed = (width !== properties.width || height !== properties.height);
+                let changed =
+                    width !== properties.width || height !== properties.height;
                 properties.width = width;
                 properties.height = height;
                 //  cache ComputedCssProperties by className
@@ -693,8 +776,7 @@ export default class VirtualManager<T extends object> {
                     itemProps.width = 0;
                     itemProps.height = 0;
                 }
-            }
-            else {
+            } else {
                 this.onElementSized(entry.target as HTMLElement);
             }
         }
@@ -709,11 +791,14 @@ export default class VirtualManager<T extends object> {
             let windowPin = anchor.windowPin ?? 0;
             const bounds = this.getItemRect(item);
             if (bounds) {
-                const clientSize = this.container[this.horizontal ? "clientWidth" : "clientHeight"];
+                const clientSize =
+                    this.container[
+                        this.horizontal ? "clientWidth" : "clientHeight"
+                    ];
                 const targetScrollPosition =
                     bounds[this.horizontal ? "x" : "y"] +
-                    itemPin * bounds[this.horizontal ? "width" : "height"]
-                    - windowPin * clientSize;
+                    itemPin * bounds[this.horizontal ? "width" : "height"] -
+                    windowPin * clientSize;
                 return targetScrollPosition;
             }
         }
@@ -722,8 +807,13 @@ export default class VirtualManager<T extends object> {
 
     scrollToItem(key: string, options?: ScrollToOptions) {
         // correct for legacy .behavior option
-        if (options != null && (options as any).behavior != null && options.duration == null) {
-            options.duration = (options as any).behavior === "smooth" ? 0.5 : 0.0;
+        if (
+            options != null &&
+            (options as any).behavior != null &&
+            options.duration == null
+        ) {
+            options.duration =
+                (options as any).behavior === "smooth" ? 0.5 : 0.0;
         }
         const itemPin = options?.position ?? 0;
         const windowPin = options?.position ?? 0;
@@ -743,7 +833,8 @@ export default class VirtualManager<T extends object> {
     private startScrollAnimation(scrollAnchor: ScrollAnchor) {
         this.scrollAnchor = scrollAnchor;
         this.scrollStartTime = Date.now();
-        this.scrollStartPosition = this.container[this.horizontal ? "scrollLeft" : "scrollTop"];
+        this.scrollStartPosition =
+            this.container[this.horizontal ? "scrollLeft" : "scrollTop"];
         this.scrollDuration = scrollAnchor.duration;
         this.scrollAnimationCallback();
     }
@@ -759,10 +850,12 @@ export default class VirtualManager<T extends object> {
     }
 
     private scrollAnimationCallback() {
-        let continueAnimating = true;
+        let continueAnimating = false;
         delete this.scrollAnimating;
         if (this.scrollAnchor != null) {
-            let targetPosition = this.getItemTargetScrollPosition(this.scrollAnchor);
+            let targetPosition = this.getItemTargetScrollPosition(
+                this.scrollAnchor
+            );
             if (targetPosition != null) {
                 let startDelta = targetPosition - this.scrollStartPosition!;
                 //  we are going to try to smooth scroll... BUT if we are scrolling a very long way
@@ -774,22 +867,31 @@ export default class VirtualManager<T extends object> {
                 }
                 let time = (Date.now() - this.scrollStartTime!) / 1000;
                 let elapsed = Math.min(time, this.scrollDuration);
-                let alpha = this.scrollDuration > 0 ? elapsed / this.scrollDuration : 1.0;
+                let alpha =
+                    this.scrollDuration > 0
+                        ? elapsed / this.scrollDuration
+                        : 1.0;
                 let animatedTopNow = targetPosition - (1 - alpha) * startDelta;
-                this.container[this.horizontal ? "scrollLeft" : "scrollTop"] = this.getClippedScrollTarget(animatedTopNow);
+                this.container[this.horizontal ? "scrollLeft" : "scrollTop"] =
+                    this.getClippedScrollTarget(animatedTopNow);
                 //  keep animating for twice the scroll duration.
                 //  this provides extra time after scroll for resizing of
                 //  nearby element positions to get fixed to the anchor point.
-                continueAnimating = time < (this.scrollDuration + this.scrollWaitAfterFinish);
+                continueAnimating =
+                    time < this.scrollDuration + this.scrollWaitAfterFinish;
                 // console.log({ animatedTopNow, targetTop, alpha, elapsed, time, startDelta, startTop: this.scrollStartPosition, continueAnimating });
             }
         }
         if (continueAnimating) {
-            if (this.scrollAnimating == null && typeof requestAnimationFrame === "function") {
-                this.scrollAnimating = requestAnimationFrame(this.scrollAnimationCallback.bind(this));
+            if (
+                this.scrollAnimating == null &&
+                typeof requestAnimationFrame === "function"
+            ) {
+                this.scrollAnimating = requestAnimationFrame(
+                    this.scrollAnimationCallback.bind(this)
+                );
             }
-        }
-        else {
+        } else {
             this.cancelScrollAnimation();
         }
     }
@@ -812,9 +914,17 @@ export default class VirtualManager<T extends object> {
         return props;
     }
 
-    static instance<T extends object>(container: HTMLElement): VirtualManager<T> | undefined
-    static instance<T extends object>(container: HTMLElement, props: ContainerProperties<T>): VirtualManager<T>
-    static instance<T extends object>(container: HTMLElement, props?: ContainerProperties<T>): VirtualManager<T> | undefined {
+    static instance<T extends object>(
+        container: HTMLElement
+    ): VirtualManager<T> | undefined;
+    static instance<T extends object>(
+        container: HTMLElement,
+        props: ContainerProperties<T>
+    ): VirtualManager<T>;
+    static instance<T extends object>(
+        container: HTMLElement,
+        props?: ContainerProperties<T>
+    ): VirtualManager<T> | undefined {
         let manager = container[VirtualManager.symbol];
         if (manager == null && props != null) {
             manager = new VirtualManager<T>(props);
@@ -827,5 +937,4 @@ export default class VirtualManager<T extends object> {
         manager.update(props);
         return manager.renderKeys;
     }
-
 }
