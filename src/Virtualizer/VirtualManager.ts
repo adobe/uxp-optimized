@@ -822,6 +822,7 @@ export default class VirtualManager<T extends object> {
         const top = this.getItemTargetScrollPosition(scrollAnchor);
         if (top != null) {
             this.startScrollAnimation(scrollAnchor);
+            this.updateAndLayout(false);
         }
     }
 
